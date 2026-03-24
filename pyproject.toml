@@ -1,0 +1,25 @@
+[project]
+name = "spark-essentials-rtjvm"
+version = "0.1.0"
+description = "This is for completing the course using also PySpark for solving exercises."
+authors = [
+    {name = "Eddie Jobs",email = "iamezcua.dev@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pyspark (>=3.5,<4.0.0)"
+]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.0.2,<10.0.0)",
+    "ruff (>=0.15.7,<0.16.0)"
+]
