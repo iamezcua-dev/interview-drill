@@ -1,0 +1,1 @@
+Q14 [SQL | Theory | Senior] — What is a CTE (Common Table Expression)? How does it differ from a subquery, and when would you prefer one over the other?
