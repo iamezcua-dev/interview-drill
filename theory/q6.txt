@@ -1,0 +1,1 @@
+Q6 [SQL | Theory | Senior] — What is the difference between WHERE and HAVING in SQL? When must you use one over the other?
