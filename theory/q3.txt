@@ -1,0 +1,1 @@
+Q3 [PySpark | Theory | Senior] — What is the difference between a transformation and an action in Apache Spark? Why does this distinction matter in practice?
