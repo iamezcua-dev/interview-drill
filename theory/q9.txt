@@ -1,0 +1,1 @@
+Q9 [SQL | Theory | Senior] — What is the difference between INNER JOIN, LEFT JOIN, and CROSS JOIN? Give an example use case for each.
