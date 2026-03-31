@@ -18,8 +18,14 @@ GO
 CREATE OR ALTER PROCEDURE dbo.q2_solution
 AS
 BEGIN
-
-    -- solution goes here
+    SELECT
+        department,
+        employee_id,
+        sale_date,
+        amount,
+        SUM(amount) OVER (PARTITION BY department ORDER BY sale_date ROWS UNBOUNDED PRECEDING) AS running_total
+    FROM employee_sales
+    ORDER BY department, sale_date;
     RETURN
 
 END;
