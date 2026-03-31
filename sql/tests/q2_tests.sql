@@ -209,8 +209,10 @@ PRINT 'TEST 9 PASS: Large amounts handled without overflow';
 GO
 
 -- -------------------------------------------------
--- TEST 10: Two rows with same sale_date in same dept (non-deterministic row order)
---          Verify MAX running_total per date rather than individual row order
+-- TEST 10: Two rows with same sale_date in same dept
+--          RANGE: both rows see running_total = 1000 (combined)
+--          ROWS:  one row sees 300, other sees 1000 (incremental)
+--          We enforce ROWS behavior: both individual totals must exist
 -- -------------------------------------------------
 TRUNCATE TABLE employee_sales;
 INSERT INTO employee_sales VALUES
@@ -219,13 +221,25 @@ INSERT INTO employee_sales VALUES
     (3,'APAC','2024-01-02',500);
 
 DROP TABLE IF EXISTS #actual;
-CREATE TABLE #actual (department VARCHAR(5), employee_id INT, sale_date DATE, amount DECIMAL(10,2), running_total DECIMAL(10,2));
+CREATE TABLE #actual (
+    department   VARCHAR(5),
+    employee_id  INT,
+    sale_date    DATE,
+    amount       DECIMAL(10,2),
+    running_total DECIMAL(10,2)
+);
 INSERT INTO #actual EXEC dbo.q2_solution;
-IF (SELECT MAX(running_total) FROM #actual WHERE sale_date = '2024-01-01') <> 1000.00
-    THROW 50001,'TEST 10 FAIL: running_total at 2024-01-01 should peak at 1000',1;
-IF (SELECT MAX(running_total) FROM #actual WHERE sale_date = '2024-01-02') <> 1500.00
-    THROW 50002,'TEST 10 FAIL: running_total at 2024-01-02 should be 1500',1;
+-- With ROWS: running totals on 2024-01-01 must be 300 and 1000
+-- (one per physical row). With RANGE both would be 1000 — fail.
+IF (SELECT COUNT(DISTINCT running_total)
+    FROM #actual WHERE sale_date = '2024-01-01') <> 2
+    THROW 50001,
+        'TEST 10 FAIL: tied-date rows must have distinct running_totals (use ROWS not RANGE)',1;
+IF (SELECT MAX(running_total)
+    FROM #actual WHERE sale_date = '2024-01-02') <> 1500.00
+    THROW 50002,
+        'TEST 10 FAIL: running_total at 2024-01-02 should be 1500',1;
 IF (SELECT COUNT(*) FROM #actual) <> 3
     THROW 50003,'TEST 10 FAIL: Expected 3 rows',1;
-PRINT 'TEST 10 PASS: Same-date tie handled, cumulative totals correct';
+PRINT 'TEST 10 PASS: ROWS frame — tied dates get distinct running totals';
 GO
