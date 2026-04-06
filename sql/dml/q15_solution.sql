@@ -19,7 +19,10 @@ CREATE OR ALTER PROCEDURE dbo.q15_solution
 AS
 BEGIN
 
-    -- solution goes here
+	SELECT d.department_name, COUNT(e.employee_id) as employee_count
+	FROM dept d LEFT JOIN emp e ON d.department_id = e.department_id
+	GROUP BY d.department_name;
+	
     RETURN
 
 END;
