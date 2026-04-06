@@ -18,7 +18,12 @@ CREATE OR ALTER PROCEDURE dbo.q5_solution
 AS
 BEGIN
 
-    -- solution goes here
+	SELECT customer_id
+	FROM orders
+	WHERE DATEPART(YEAR, order_date) = 2024
+	GROUP BY customer_id
+	HAVING count(DISTINCT DATEPART(MONTH, order_date)) = 12;
+	
     RETURN
 
 END;
