@@ -20,7 +20,20 @@ CREATE OR ALTER PROCEDURE dbo.q12_solution
 AS
 BEGIN
 
-    -- solution goes here
+	WITH cte_totals AS (
+		SELECT customer_id, SUM(amount) AS total_spent 
+		FROM orders
+		GROUP BY customer_id
+	), cte_totals_ranked AS (
+		SELECT
+			customer_id,
+			total_spent,
+			DENSE_RANK() OVER (ORDER BY total_spent DESC) AS ranked
+		FROM cte_totals
+	)
+
+	SELECT customer_id, total_spent FROM cte_totals_ranked WHERE ranked <= 3 ORDER BY total_spent DESC;
+	
     RETURN
 
 END;
