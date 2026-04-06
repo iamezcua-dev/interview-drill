@@ -18,23 +18,23 @@ GO
 CREATE OR ALTER PROCEDURE dbo.q1_solution
 AS
 BEGIN
-    WITH cte_ranked_employees AS (
-        SELECT
-            employee_id,
-            department,
-            SUM(amount) AS total_sales,
-            RANK() OVER (PARTITION BY department ORDER BY SUM(amount) DESC) AS ranked_employees
-        FROM employee_sales
-        GROUP BY department, employee_id
-    )
 
-    SELECT
-        department,
-        employee_id,
-        total_sales
-    FROM cte_ranked_employees
-    WHERE ranked_employees = 1;
+	WITH cte_totals AS (
+		SELECT
+			department,
+			employee_id,
+			SUM(amount) AS total_sales
+		FROM employee_sales
+		GROUP BY department, employee_id
+	), cte_total_sales_ranked AS (
+		SELECT
+			*,
+			RANK() OVER(PARTITION BY department ORDER BY total_sales DESC) AS sales_rank_id
+		FROM cte_totals
+	)
 
+	SELECT department, employee_id, total_sales FROM cte_total_sales_ranked where sales_rank_id = 1;
+		
     RETURN
 
 END;
