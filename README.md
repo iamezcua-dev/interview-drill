@@ -11,7 +11,7 @@ Note: replace \<**N**\> with the actual question name.
 Run DDL and tests for a specific question:
 
 ```bash
-export QUESTION_NUMBER='q<N>' && sqlcmd -S localhost,1433 -U sa -P 'Eddiejob$' -N disable -i sql/{ddl/${QUESTION_NUMBER}_ddl,tests/${QUESTION_NUMBER}_tests}.sql
+export QUESTION_NUMBER='q<N>' && sqlcmd -S localhost,1433 -U sa -P 'Astro123+' -N disable -i sql/{ddl/${QUESTION_NUMBER}_ddl,tests/${QUESTION_NUMBER}_tests}.sql
 ```
 
 ### PySpark
