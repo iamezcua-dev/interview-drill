@@ -1,1 +1,24 @@
 Q3 [PySpark | Theory | Senior] — What is the difference between a transformation and an action in Apache Spark? Why does this distinction matter in practice?
+
+---------- What is a transformation ? ----------
+A transformation in Spark, is an operation that defines a new DataFrame or RDD from an existing one, but doesn't execute immediately. It's lazy, Spark just records what you want to do (builds a logical plan) without actually computing anything. It waits until an action triggers execution, which allows Spark to optimize the entire chain before running it.
+Examples: filter(), select(), groupBy(), join(), withColumn(), map(), orderBy() / sort(), alias(), limit(), agg()
+
+
+---------- What is an action ? ----------
+An action is an operation that triggers actual execution of all the transformations that have been queued up. It forces Spark to compute a result and either return it to the driver or write it to storage.
+Examples: show(), count(), collect(), first(), take(), write.save(), toPandas(), head(), tail(), foreach(), foreachPartition(), saveAsTextFile(), saveAsTable(), write.parquet() / write.csv() / write.json(), isEmpty()
+Spark looks at the entire chain of transformations, optimizes it into a physical execution plan, and then runs it across the cluster.
+
+---------- Why does this distinction matter in practice? ----------
+This distinction matters because of lazy evaluation and the optimization it enables.
+	* Optimization: Because Spark waits until an action to execute, it can see the entire chain of transformations at once and optimize them together.
+		* Example: If you filter after a join, Spark might push the filter before the join to reduce data early. 
+				   This is done by the Catalyst optimizer. If transformations executed immediately, this wouldn't be possible.
+	* Efficiency: Spark can combine multiple steps, eliminate unnecessary work, and minimize data movement across the cluster. 
+		* Example: If you select 3 columns and later select just 1, Spark knows to only read that 1 column from the start.
+	* Fault tolerance: Since transformations are just a recorded plan (called the lineage), if a node fails, Spark can recompute just the lost partitions by replaying the transformations from the source data, rather than starting over from scratch.
+	* Performance awareness: Knowing this distinction helps you write better code. Every action triggers a full execution.
+		* Example: Calling count() 5 times on the same DataFrame means Spark runs the plan 5 times. If you need to reuse a result, you should cache or persist the DataFrame to avoid redundant computation.
+	
+In short: transformations build the plan, actions execute it; and that separation is what allows Spark to be smart about how it processes large-scale data.
