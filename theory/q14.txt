@@ -1,1 +1,36 @@
 Q14 [SQL | Theory | Senior] — What is a CTE (Common Table Expression)? How does it differ from a subquery, and when would you prefer one over the other?
+
+---------- What is a CTE ? ----------
+A CTE is a temporary named result set. Is defined with the keyword "WITH". 
+It's giving a name to a query so we can reference it later.
+You can reference a CTE multiple times in the same statement (like in other CTEs).
+It gives a cleaner look to the code, improving readability, by breaking down complex/long logic into intermediate named steps, making it easier to follow and maintain.
+Declared immediately before the statement that uses it, usually at the beginning of the code section.
+The CTE's scope is strictly the one statement it's defined in. It lives only for the single statement it's attached to. It's not like a temporary table that persists for a session.
+Regarding storage, it depends on the database you are using, it can be:
+	* Materialized: The CTE query is executed only once and the result set is stored in a temporary work area (in memory, spilling to disk if it's too large). This result is then reused as many times as needed without reexecuting the CTE again.
+	* Inlined: The CTE isn't stored anywhere. The optimizer replaces the CTE reference with the underlying query, as if you'd written a subquery, executing it N times. The optimizer can optimize better each query.
+	* Remember materialization isn't always better, depending on your needs, you can choose in DBMS like PostgreSQL v12+, if you prefer it materialized or inlined.
+	* Not all DBMS support materialization.
+
+---------- What is a subquery ? ----------
+A subquery is a query nested directly inside another query. 
+They can appear for example in the SELECT, FROM, WHERE, HAVING, JOIN, INSERT, UPDATE, DELETE clauses. Almost anywhere a table reference or a scalar value is expected.
+They can't be reused, if you need the same logic more than once, the entire subquery code has to be repeated.
+Declared inline, when needed.
+
+---------- How do they differ? ----------
+Both produce a derived result set, but CTEs are declared at the beginning of the code and referenced later by their name, while subqueries are written inline.
+A CTE can be referenced multiple times in the same statement, while a subquery has to be repeated if you need it more than once.
+CTEs can be recursive, while subqueries do not support this.
+In terms of performance, when a CTE is referenced only once, most databases produce the same execution plan as an equivalent subquery. When a CTE is referenced multiple times performance depends on the database used (materialized vs inlined).
+
+---------- When would you prefer a subquery over a CTE ? ----------
+A subquery is preferred when you have very simple logic, that is used only once, and is short.
+
+---------- When would you prefer a CTE over a subquery ? ----------
+A CTE is preferred when:
+	* You need to reference the same derived data more than once. (Avoids duplicating code)
+	* If you need to use a recursive query.
+	* When you have complex multi-step transformations, it allows for layer by layer logic with the use of intermediate steps.
+	* For better readability, by using intermediate steps for complex logic, making it easier to follow and maintain.
