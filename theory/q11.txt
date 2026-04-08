@@ -1,1 +1,19 @@
 Q11 [PySpark | Theory | Senior] — What is lazy evaluation in Spark? Why does Spark use it, and what triggers actual computation?
+
+---------- What is lazy evaluation ? ----------
+Lazy evaluation means Spark doesn't execute operations the moment you write them. Instead, when you chain transformations like filter(), select(), join(), etc., Spark just records each step into a logical plan (a DAG — Directed Acyclic Graph). No data is read, moved, or computed at this point.
+
+---------- Why is used ? ----------
+Lazy evaluation lets Spark be strategic rather than reactive — it plans first, then executes in the smartest way possible.
+
+Benefits are:
+* Optimization — By waiting, Spark sees the full chain of operations before executing. The Catalyst optimizer can then rearrange, combine, or eliminate steps.
+* Efficiency — Spark avoids unnecessary intermediate results. Without lazy evaluation, each transformation would produce and store a full intermediate dataset. With it, Spark pipelines everything together and only computes what's actually needed for the final result.
+* Fault tolerance — The recorded plan (lineage) acts as a recovery blueprint. If a node fails, Spark replays the transformations on the lost partitions instead of restarting everything.
+* Reduced I/O and network traffic — Because Spark optimizes the whole plan at once, it minimizes how much data gets shuffled between nodes. For example, if it knows a filter will eliminate 90% of rows, it applies that early to avoid moving unnecessary data across the cluster.
+
+Lazy evaluation is the underlying principle that makes the transformation/action distinction possible.
+
+---------- What triggers actual computation ? ----------
+The actual computation only happens when an action is called, that's when Spark takes the entire plan, passes it through the Catalyst optimizer to produce an optimized physical execution plan, and then runs it across the cluster.
+Each action triggers a separate execution. So two actions on the same DataFrame means Spark runs the plan twice, unless you .cache() or .persist() the DataFrame in between.
