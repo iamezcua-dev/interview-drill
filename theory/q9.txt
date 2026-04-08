@@ -1,1 +1,152 @@
 Q9 [SQL | Theory | Senior] — What is the difference between INNER JOIN, LEFT JOIN, and CROSS JOIN? Give an example use case for each.
+
+---------- Dataset for examples ----------
+country               population
+country_id name       country_id total_population
+1          Mexico     1          130000000
+2          Brazil     2          215000000
+3          Japan      3          125000000
+4          Germany    5          55000000
+5          Kenya      6          26000000
+6          Australia  8          110000000
+7          Canada     9          68000000
+8          Egypt      10         38000000
+                      11         84000000
+					  12         45000000
+
+---------- Inner Join usage and example ----------
+An Inner Join returns only the rows where there's a match in both tables. If a row in either table has no match in the other one, it's excluded from the result.
+
+Example result: country Inner Join population on "country_id":
+country_id name       country_id total_population
+1          Mexico     1          130000000
+2          Brazil     2          215000000
+3          Japan      3          125000000
+5          Kenya      5          55000000
+6          Australia  6          26000000
+8          Egypt      8          110000000
+
+
+---------- Left Join usage and example ----------
+A Left Join returns all rows from the left table, and the matching rows from the right table. If there's no match on the right side, those columns come back as NULL.
+
+Example result: country Left Join population on "country_id":
+country_id name       country_id total_population
+1          Mexico     1          130000000
+2          Brazil     2          215000000
+3          Japan      3          125000000
+4          Germany    NULL       NULL
+5          Kenya      5          55000000
+6          Australia  6          26000000
+7          Canada     NULL       NULL
+8          Egypt      8          110000000
+
+Example result: population Left Join country on "country_id":
+country_id total_population country_id name
+1          130000000        1          Mexico
+2          215000000        2          Brazil
+3          125000000        3          Japan
+5          55000000         5          Kenya
+6          26000000         6          Australia
+8          110000000        8          Egypt
+9          68000000         NULL       NULL
+10         38000000         NULL       NULL
+11         84000000         NULL       NULL
+12         45000000         NULL       NULL
+
+---------- Cross Join usage and example ----------
+A Cross Join returns the cartesian product. Every row from the left table combined with every row from the right table. No ON condition is used.
+Remember to have caution, as cross joins can produce massive result sets very quickly. For example, a 1000 row table crossed with another 1000 row table gives you 1000000 rows. So you typically only use them with small tables or when you genuinely need every combination.
+
+Example result: country Cross Join population:
+country_id name       country_id total_population
+1          Mexico     1          130000000
+1          Mexico     2          215000000
+1          Mexico     3          125000000
+1          Mexico     5          55000000
+1          Mexico     6          26000000
+1          Mexico     8          110000000
+1          Mexico     9          68000000
+1          Mexico     10         38000000
+1          Mexico     11         84000000
+1          Mexico     12         45000000
+2          Brazil     1          130000000
+2          Brazil     2          215000000
+2          Brazil     3          125000000
+2          Brazil     5          55000000
+2          Brazil     6          26000000
+2          Brazil     8          110000000
+2          Brazil     9          68000000
+2          Brazil     10         38000000
+2          Brazil     11         84000000
+2          Brazil     12         45000000
+3          Japan      1          130000000
+3          Japan      2          215000000
+3          Japan      3          125000000
+3          Japan      5          55000000
+3          Japan      6          26000000
+3          Japan      8          110000000
+3          Japan      9          68000000
+3          Japan      10         38000000
+3          Japan      11         84000000
+3          Japan      12         45000000
+4          Germany    1          130000000
+4          Germany    2          215000000
+4          Germany    3          125000000
+4          Germany    5          55000000
+4          Germany    6          26000000
+4          Germany    8          110000000
+4          Germany    9          68000000
+4          Germany    10         38000000
+4          Germany    11         84000000
+4          Germany    12         45000000
+5          Kenya      1          130000000
+5          Kenya      2          215000000
+5          Kenya      3          125000000
+5          Kenya      5          55000000
+5          Kenya      6          26000000
+5          Kenya      8          110000000
+5          Kenya      9          68000000
+5          Kenya      10         38000000
+5          Kenya      11         84000000
+5          Kenya      12         45000000
+6          Australia  1          130000000
+6          Australia  2          215000000
+6          Australia  3          125000000
+6          Australia  5          55000000
+6          Australia  6          26000000
+6          Australia  8          110000000
+6          Australia  9          68000000
+6          Australia  10         38000000
+6          Australia  11         84000000
+6          Australia  12         45000000
+7          Canada     1          130000000
+7          Canada     2          215000000
+7          Canada     3          125000000
+7          Canada     5          55000000
+7          Canada     6          26000000
+7          Canada     8          110000000
+7          Canada     9          68000000
+7          Canada     10         38000000
+7          Canada     11         84000000
+7          Canada     12         45000000
+8          Egypt      1          130000000
+8          Egypt      2          215000000
+8          Egypt      3          125000000
+8          Egypt      5          55000000
+8          Egypt      6          26000000
+8          Egypt      8          110000000
+8          Egypt      9          68000000
+8          Egypt      10         38000000
+8          Egypt      11         84000000
+8          Egypt      12         45000000
+
+---------- Difference between Inner Join, Left Join and Cross Join ----------
+
+The difference comes down to which rows are included in the result:
+	* Inner Join: only rows that match in both tables.
+		* restrictive - shrinks results.
+	* Left Join: all rows from the left table, plus matches from the right, no match on the right = NULLs.
+		* preserving - keeps left side complete.
+	* Cross Join: every row combined with every other row. No condition, no matching - just all possible combinations.
+		* multiplicative - explodes results.
