@@ -1,1 +1,29 @@
 Q6 [SQL | Theory | Senior] — What is the difference between WHERE and HAVING in SQL? When must you use one over the other?
+
+---------- Where clause usage ----------
+The Where clause filters individual rows before any grouping or aggregation happens. 
+It looks at each row in the table and validates a condition to decide if such row is included or excluded from the result set.
+It reduces the number of rows before grouping, meaning the database has less work to do in next steps.
+
+---------- Having clause usage ----------
+The Having clause filters groups that have already been formed by 'GROUP BY', after aggregation has been calculated. It decides whether an entire group should be included in the final result based on aggregate values.
+
+---------- Difference between Where and Having ----------
+The difference comes down to when each one operates in the query execution order.
+	* Where:
+		* Filters individual rows before grouping and aggregation. It works on raw column values and cannot use aggregate functions, because the rows haven't been grouped yet.
+	* Having:
+		* Filters groups after grouping and aggregation have happened. It works on aggregated results and can use aggregate functions.
+
+---------- Where use Where over Having ----------
+When you're filtering on individual row values. (row-level conditions)
+
+---------- Where use Having over Where ----------
+When you need to filter based on an aggregate result. (group-level conditions)
+
+---------- Important to have in mind ----------
+	* Grouping: is the act of organizing rows into groups based on shared values (what GROUP BY does). At this point, no math has happened, you just have buckets of rows.
+	* Aggregation: is the calculation performed on each group — COUNT(), SUM(), AVG(), etc. This happens after the groups are formed.
+
+	* So the sequence is: 'Where' clause narrows down the rows first, then grouping (form the buckets), then aggregation (do math on each bucket), and finally the 'Having' clause.
+		* WHERE → Grouping → Aggregation → HAVING
