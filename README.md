@@ -16,6 +16,39 @@ Here you can see how many problems you have solved so far.
 
 See problem list [here](#problem-list).
 
+## Dependencies
+
+- [Docker](https://docs.docker.com/get-docker/); required to run the SQL Server instance for SQL problems.
+
+## Setup
+
+### SQL Server (Azure SQL Edge)
+
+SQL problems run against a local Azure SQL Edge container. Start it with:
+
+```bash
+docker run -e "ACCEPT_EULA=1" \
+           -e 'MSSQL_SA_PASSWORD=<your-password>' \
+           -p 1433:1433 \
+           --name sql-drill \
+           --restart unless-stopped \
+           -d mcr.microsoft.com/azure-sql-edge:latest
+```
+
+> [!WARNING]
+> Replace `<your-password>` with a strong, unique password of your own. The placeholder shown here is an example; do not copy it verbatim. Even in a dev environment, exposed passwords on known ports are a security risk; avoid reusing example credentials from documentation.
+
+> [!TIP]
+> `--restart unless-stopped` makes the container start automatically on Docker startup, so you rarely need to run this more than once.
+
+To start an existing (stopped) container:
+
+```bash
+docker start sql-drill
+```
+
+---
+
 ## How to know you have properly solved a particular code problem?
 
 By running its associated test harness. See the instructions below.
@@ -38,7 +71,14 @@ By running its associated test harness. See the instructions below.
   ```
 
 > [!IMPORTANT]
-> Make sure you have properly set `SQLCMDUSER` and `SQLCMDPASSWORD` in your system. More info [here](https://learn.microsoft.com/en-us/sql/tools/sqlcmd/sqlcmd-utility?view=sql-server-ver17&tabs=go%2Cwindows-support&pivots=cs1-bash#-p-password).
+> Set these env vars before running `sqlcmd`, using the same credentials you chose when starting the container:
+> ```bash
+> export SQLCMDUSER=<your-username>
+> export SQLCMDPASSWORD='<your-password>'
+> ```
+> The values shown in the Setup section are examples only. **Do not use them as-is**; choose a strong, unique password even in a dev environment. Weak credentials in local containers are a common attack vector when ports are accidentally exposed.
+>
+> More info [here](https://learn.microsoft.com/en-us/sql/tools/sqlcmd/sqlcmd-utility?view=sql-server-ver17&tabs=go%2Cwindows-support&pivots=cs1-bash#-p-password).
 
 ### ⚡️ PySpark problems
 
