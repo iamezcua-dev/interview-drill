@@ -2,7 +2,11 @@
 --     total sales. Ties must return all tied employees.
 -- Output columns: department, employee_id, total_sales
 
-USE UnoSquareDrill;
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'interview_drill')
+    CREATE DATABASE interview_drill;
+GO
+
+USE interview_drill;
 GO
 
 SET NOCOUNT ON;

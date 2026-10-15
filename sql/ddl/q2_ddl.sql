@@ -4,7 +4,7 @@
 -- Output columns: department, employee_id, sale_date, amount,
 --                 running_total
 
-USE UnoSquareDrill;
+USE interview_drill;
 GO
 
 SET NOCOUNT ON;

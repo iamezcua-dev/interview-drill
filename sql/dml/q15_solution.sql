@@ -9,7 +9,7 @@
 --         department_id    INT NULL
 -- Output: department_name, employee_count
 
-USE UnoSquareDrill;
+USE interview_drill;
 GO
 
 SET NOCOUNT ON;

@@ -2,7 +2,7 @@
 --     month of 2024.
 -- Output columns: customer_id
 
-USE UnoSquareDrill;
+USE interview_drill;
 GO
 
 SET NOCOUNT ON;

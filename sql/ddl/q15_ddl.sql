@@ -3,7 +3,7 @@
 -- including departments that have no employees (count = 0).
 -- Output columns: department_name, employee_count
 
-USE UnoSquareDrill;
+USE interview_drill;
 GO
 
 SET NOCOUNT ON;

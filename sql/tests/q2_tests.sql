@@ -8,7 +8,7 @@
 
 :r ./sql/dml/q2_solution.sql
 
-USE UnoSquareDrill;
+USE interview_drill;
 GO
 
 SET NOCOUNT ON;

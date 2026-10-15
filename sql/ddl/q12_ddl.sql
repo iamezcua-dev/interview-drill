@@ -5,7 +5,7 @@
 -- within the top 3 dense rank positions must be returned.
 -- Output columns: customer_id, total_spent
 
-USE UnoSquareDrill;
+USE interview_drill;
 GO
 
 SET NOCOUNT ON;

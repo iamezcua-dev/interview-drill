@@ -10,7 +10,7 @@
 --         amount      DECIMAL(10,2)
 -- Output: customer_id, total_spent
 
-USE UnoSquareDrill;
+USE interview_drill;
 GO
 
 SET NOCOUNT ON;
