@@ -1,42 +1,55 @@
+# Installed by `drill setup`. The drill hooks run the same commands as CI
+# (.github/workflows/drill.yml), so local results match GitHub.
+#
+# Solvers are never blocked: `drill check` reports failing solutions and
+# still exits 0, and the auto-fixers below skip solutions/ so they can't
+# rewrite (and therefore reject) a solver's commit.
+default_install_hook_types: [pre-commit, commit-msg]
+
 repos:
-  - hooks:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
       - id: trailing-whitespace
+        exclude: ^solutions/
       - id: end-of-file-fixer
-      - id: check-yaml
-      - id: check-added-large-files
-      - id: check-merge-conflict
+        exclude: ^solutions/
       - id: mixed-line-ending
-    repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
-  - hooks:
-      - id: typos
-        args: []
-    repo: https://github.com/crate-ci/typos
+        exclude: ^solutions/
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+
+  - repo: https://github.com/crate-ci/typos
     rev: v1.24.6
-  - hooks:
-      - id: conventional-pre-commit
-        args:
-          - feat
-          - fix
-          - docs
-          - style
-          - refactor
-          - perf
-          - test
-          - build
-          - ci
-          - revert
-        stages:
-          - commit-msg
-    repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v3.4.0
-  - hooks:
-      - id: commitizen
-    repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.15.1
-  - hooks:
-      - id: gitlint
-        stages:
-          - commit-msg
-    repo: https://github.com/jorisroovers/gitlint
-    rev: v0.19.1
+    hooks:
+      - id: typos
+        exclude: ^(solutions|problems/.*/cases)/
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.7
+    hooks:
+      - id: ruff-check
+        files: ^(drill|tests)/
+
+  - repo: local
+    hooks:
+      - id: drill-lint
+        name: drill lint (problem folders are well formed)
+        entry: poetry run drill lint
+        language: system
+        pass_filenames: false
+        files: ^problems/
+
+      - id: drill-check
+        name: drill check (grades what you changed; never blocks)
+        entry: poetry run drill check
+        language: system
+        files: ^(solutions|problems)/
+        verbose: true
+
+      - id: drill-commit-msg
+        name: commit message (conventional on main-bound branches)
+        entry: poetry run drill commit-msg
+        language: system
+        stages: [commit-msg]
