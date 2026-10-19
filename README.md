@@ -1,128 +1,99 @@
-# Interview Practice
+# Interview Drill
 
-## Objective
+Warm-up drills for data engineering interviews. Solve each problem in
+**T-SQL, PySpark, Spark SQL or Scala** (or answer theory questions), and
+let `drill` grade you instantly.
 
-This is an effort to help you warm up for your upcoming interviews.
-
-You're expected to work on a separate branch created from `main`, which can be used to get the latest problems as I add more.
-
-## Problem solving progress
-
-Here you can see how many problems you have solved so far.
-
-```
-░░░░░░░░░░░░░░░░░░░░  0 / 15 done (0%)
-```
-
-See problem list [here](#problem-list).
-
-## Dependencies
-
-- [Docker](https://docs.docker.com/get-docker/); required to run the SQL Server instance for SQL problems.
-
-## Setup
-
-### SQL Server (Azure SQL Edge)
-
-SQL problems run against a local Azure SQL Edge container. Start it with:
+## Quick start
 
 ```bash
-docker run -e "ACCEPT_EULA=1" \
-           -e 'MSSQL_SA_PASSWORD=<your-password>' \
-           -p 1433:1433 \
-           --name sql-drill \
-           --restart unless-stopped \
-           -d mcr.microsoft.com/azure-sql-edge:latest
+poetry install                 # Python deps (needs Python 3.12+)
+poetry run drill setup         # SQL Server container, password, git hooks
+git switch -c drill/<your-github-handle>
+poetry run drill next          # suggests a problem you haven't started
 ```
 
-> [!WARNING]
-> Replace `<your-password>` with a strong, unique password of your own. The placeholder shown here is an example; do not copy it verbatim. Even in a dev environment, exposed passwords on known ports are a security risk; avoid reusing example credentials from documentation.
+`drill setup` is safe to re-run. It creates your local `drill.yaml`, starts
+a SQL Server container (`compose.yaml`), stores a generated password in
+your OS keychain and installs the git hooks, then runs `drill doctor`.
 
-> [!TIP]
-> `--restart unless-stopped` makes the container start automatically on Docker startup, so you rarely need to run this more than once.
-
-To start an existing (stopped) container:
+## The daily loop
 
 ```bash
-docker start sql-drill
+poetry run drill start q001 --lang tsql   # copies a stub to solutions/q001/
+# ...write your answer in solutions/q001/solution.tsql.sql...
+poetry run drill test q001                # grade it, as often as you like
+git commit -am "q001(tsql): Attempt 1"    # failures are reported, never blocking
+poetry run drill status                   # your progress
 ```
 
----
+- **T-SQL / Spark SQL**: a plain `.sql` file, no procedure wrapper. Clear
+  it and start over any time; the last result set is your answer.
+- **PySpark / Scala**: implement `solution(...)`, which takes one
+  DataFrame per table and returns a DataFrame.
+- **Theory**: write your answer in `answer.md`, and add a final line
+  `SOLVED` when you're happy with it.
+- `drill show q001` prints a statement; `drill next --lang pyspark`
+  narrows suggestions.
+- Reference answers live in `problems/<id>/reference/`. Peeking is up to
+  you.
 
-## How to know you have properly solved a particular code problem?
+## Requirements
 
-By running its associated test harness. See the instructions below.
+| Language | Needs | Notes |
+| -------- | ----- | ----- |
+| T-SQL | Docker (or Podman) | `drill setup` runs SQL Server 2022; it auto-starts when you test |
+| PySpark, Spark SQL | Java 17 | Auto-detected; or set `java_home` in `drill.yaml` |
+| Scala | [scala-cli](https://scala-cli.virtuslab.org/install) | Fetches Scala, Spark and its own JDK on first run |
 
-> [!NOTE]
->
-> - All commands must be run from the project root.
-> - Replace \<**N**\> with the actual question name.
+A missing toolchain only skips that language, so you can drill the
+others. `drill doctor` shows what's available.
 
-### 📊 SQL problems
+On Apple silicon, enable *Use Rosetta for x86/amd64 emulation* in Docker
+Desktop (the SQL Server image is x86-64 only).
 
-- Run both DDL and tests cases for a specific question:
+## Settings
 
-  ```bash
-  export QUESTION_NUMBER='q<N>' \
-      && sqlcmd \
-          -S localhost,1433 \
-          -N disable \
-          -i sql/{ddl/${QUESTION_NUMBER}_ddl,tests/${QUESTION_NUMBER}_tests}.sql
-  ```
+Everything is optional. `drill setup` copies `drill.example.yaml` to
+`drill.yaml`, which git ignores, and you edit that copy (port, keychain
+item, Java home, default language). The SQL Server password lives in your
+OS credential store (macOS Keychain, Windows Credential Manager, Linux
+Secret Service), not in files. Machines without a store (headless Linux,
+WSL) keep it in `drill.yaml`.
 
-> [!IMPORTANT]
-> Set these env vars before running `sqlcmd`, using the same credentials you chose when starting the container:
-> ```bash
-> export SQLCMDUSER=<your-username>
-> export SQLCMDPASSWORD='<your-password>'
-> ```
-> The values shown in the Setup section are examples only. **Do not use them as-is**; choose a strong, unique password even in a dev environment. Weak credentials in local containers are a common attack vector when ports are accidentally exposed.
->
-> More info [here](https://learn.microsoft.com/en-us/sql/tools/sqlcmd/sqlcmd-utility?view=sql-server-ver17&tabs=go%2Cwindows-support&pivots=cs1-bash#-p-password).
+## Branches and contributing
 
-### ⚡️ PySpark problems
+- `main` holds problems, references and tooling. It never contains
+  solutions, so `git merge main` into your drill branch never conflicts.
+- `drill/<handle>`: your personal solutions. Commit freely.
+- `problem/<id>-<slug>`: new problems, via a PR to `main`. Use
+  conventional commits (`feat(q016): Add ...`) on these branches.
+- CI runs the same `drill` commands as your local hooks. On `drill/*` it
+  grades your solutions; elsewhere every reference answer must pass.
 
-- Run tests cases for a specific question:
+Adding a problem: `drill new <slug> --title "..."`, fill the folder, then
+`drill stubs <id>` and write the references. See AGENTS.md for the full
+checklist.
 
-  ```bash
-  export QUESTION_NUMBER='q<N>' \
-      && poetry run pytest src/test/python/test_${QUESTION_NUMBER}.py -v
-  ```
+## Problems
 
-- Run a solution code directly (while attempting your solution or debugging):
-
-  ```bash
-  export QUESTION_NUMBER='q<N>' \
-      && poetry run python src/main/python/${QUESTION_NUMBER}_runner.py
-  ```
-
-### 📖 Theoretical problems
-
-- Ask AI or find the answer yourself. Once you're ok with the answer, please add the word **SOLVED** at the very last line.
-
----
-
-## Problem list
-
-| Status | #       | Type    | Overview                                                  |
-| :----: | ------- | ------- | --------------------------------------------------------- |
-|   🔘 | **Q1**  | SQL     | Highest-sales employee(s) per department (with ties)      |
-|   🔘 | **Q2**  | SQL     | Running total of sales per department, ordered by date    |
-|   🔘 | **Q3**  | Theory  | Transformation vs action in Apache Spark                  |
-|   🔘 | **Q4**  | PySpark | Employees earning strictly above their department average |
-|   🔘 | **Q5**  | SQL     | Customers with orders in every month of 2024              |
-|   🔘 | **Q6**  | Theory  | WHERE vs HAVING in SQL                                    |
-|   🔘 | **Q7**  | PySpark | Month-over-month revenue change                           |
-|   🔘 | **Q8**  | PySpark | Total spent per user, ordered descending                  |
-|   🔘 | **Q9**  | Theory  | INNER JOIN vs LEFT JOIN vs CROSS JOIN                     |
-|   🔘 | **Q10** | PySpark | Avg salary per department filtered > 70,000, ordered desc |
-|   🔘 | **Q11** | Theory  | Lazy evaluation in Spark                                  |
-|   🔘 | **Q12** | SQL     | Top 3 customers by total amount spent                     |
-|   🔘 | **Q13** | PySpark | Most recently visited page per user                       |
-|   🔘 | **Q14** | Theory  | CTE vs subquery in SQL                                    |
-|   🔘 | **Q15** | SQL     | Department employee count (including zero-employee depts) |
-
----
+| #    | Type   | Languages             | Problem                                            |
+| ---- | ------ | --------------------- | -------------------------------------------------- |
+| q001 | Coding | tsql, pyspark, sparksql, scala | Top seller(s) per department              |
+| q002 | Coding | tsql, pyspark, sparksql, scala | Running total of sales per department     |
+| q003 | Theory | Spark                 | Transformations vs actions in Apache Spark         |
+| q004 | Coding | tsql, pyspark, sparksql, scala | Employees earning above their department average |
+| q005 | Coding | tsql, pyspark, sparksql, scala | Customers with orders in every month of 2024 |
+| q006 | Theory | SQL                   | WHERE vs HAVING                                    |
+| q007 | Coding | tsql, pyspark, sparksql, scala | Month-over-month revenue change           |
+| q008 | Coding | tsql, pyspark, sparksql, scala | Total spent per user, highest first       |
+| q009 | Theory | SQL                   | INNER JOIN vs LEFT JOIN vs CROSS JOIN              |
+| q010 | Coding | tsql, pyspark, sparksql, scala | Departments with an average salary above 70,000 |
+| q011 | Theory | Spark                 | Lazy evaluation in Spark                           |
+| q012 | Coding | tsql, pyspark, sparksql, scala | Top 3 customers by total amount spent     |
+| q013 | Coding | tsql, pyspark, sparksql, scala | Most recently visited page per user       |
+| q014 | Theory | SQL                   | CTE vs subquery                                    |
+| q015 | Coding | tsql, pyspark, sparksql, scala | Employee count per department (including empty) |
 
 ## Questions?
 
