@@ -1,0 +1,90 @@
+# Same commands as the local pre-commit hooks, so results always match.
+#   drill/* branches  -> grade the solver's solutions (failures reported,
+#                        never fatal, exactly like the local hook)
+#   everything else   -> grade every reference answer (must all pass)
+name: drill
+
+on:
+  push:
+  pull_request:
+
+env:
+  # Throwaway database that only exists inside this CI job.
+  DRILL_DB_PASSWORD: Ci-Only_Drill_Passw0rd
+  DRILL_DB_PORT: "1433"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pipx install poetry
+      - run: poetry install
+      - run: poetry run ruff check drill tests
+      - run: poetry run pytest -q
+      - name: drill lint
+        run: |
+          BASE="${GITHUB_BASE_REF:-$GITHUB_REF_NAME}"
+          if [[ "$BASE" == "main" ]]; then
+            poetry run drill lint --main
+          else
+            poetry run drill lint
+          fi
+
+  grade:
+    runs-on: ubuntu-latest
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: ${{ env.DRILL_DB_PASSWORD }}
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost
+          -U sa -P \"$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' -b -o /dev/null"
+          --health-interval 10s --health-timeout 5s --health-retries 20
+          --health-start-period 20s
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: coursier/cache-action@v6
+      - uses: VirtusLab/scala-cli-setup@v1
+      - run: pipx install poetry
+      - run: poetry install
+      - name: drill check
+        run: |
+          BRANCH="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+          if [[ "$BRANCH" == drill/* ]]; then
+            poetry run drill check --all --strict
+          else
+            poetry run drill check --all --reference --strict
+          fi
+
+  windows:
+    # Portability check: the Spark adapters on Windows.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - run: pipx install poetry
+      - run: poetry install
+      - run: poetry run pytest -q
+      - run: poetry run drill check --all --reference --lang pyspark --strict
+      - run: poetry run drill check --all --reference --lang sparksql --strict
