@@ -1,0 +1,13 @@
+name: "Several empty departments"
+input:
+  dept:
+    - [1, "X"]
+    - [2, "Y"]
+    - [3, "Z"]
+  emp:
+    - [1, 1]
+expected:
+  rows:
+    - ["X", 1]
+    - ["Y", 0]
+    - ["Z", 0]

@@ -1,0 +1,6 @@
+orders:
+  columns:
+    - order_id: int
+    - customer_id: int
+    - order_date: date
+    - amount: decimal(10,2)

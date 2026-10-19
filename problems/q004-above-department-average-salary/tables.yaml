@@ -1,0 +1,6 @@
+employees:
+  columns:
+    - employee_id: int
+    - name: string(50)
+    - department: string(10)
+    - salary: int

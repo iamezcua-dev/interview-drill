@@ -1,0 +1,9 @@
+name: "A tie for second place does not appear"
+input:
+  employee_sales:
+    - [1, "EMEA", 2024-01-01, 500]
+    - [2, "EMEA", 2024-01-02, 300]
+    - [3, "EMEA", 2024-01-03, 300]
+expected:
+  rows:
+    - ["EMEA", 1, 500.00]

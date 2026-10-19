@@ -1,0 +1,8 @@
+name: "Average over several employees"
+input:
+  employees:
+    - [1, "A", 71000.0, 2020-01-01]
+    - [2, "A", 79000.0, 2020-01-01]
+expected:
+  rows:
+    - ["A", 75000.0]

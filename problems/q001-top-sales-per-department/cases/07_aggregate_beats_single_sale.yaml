@@ -1,0 +1,9 @@
+name: "Total of several sales beats one large sale"
+input:
+  employee_sales:
+    - [1, "APAC", 2024-01-01, 600]
+    - [1, "APAC", 2024-01-02, 600]
+    - [2, "APAC", 2024-01-03, 1100]
+expected:
+  rows:
+    - ["APAC", 1, 1200.00]

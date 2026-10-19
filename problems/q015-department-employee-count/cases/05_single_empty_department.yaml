@@ -1,0 +1,8 @@
+name: "Single empty department"
+input:
+  dept:
+    - [1, "Empty"]
+  emp: []
+expected:
+  rows:
+    - ["Empty", 0]

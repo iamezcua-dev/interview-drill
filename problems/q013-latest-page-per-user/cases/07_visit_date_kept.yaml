@@ -1,0 +1,7 @@
+name: "visit_date is returned"
+input:
+  page_visits:
+    - [1, "home", 2024-05-20]
+expected:
+  rows:
+    - [1, "home", 2024-05-20]

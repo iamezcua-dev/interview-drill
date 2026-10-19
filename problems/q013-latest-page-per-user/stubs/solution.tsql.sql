@@ -1,0 +1,6 @@
+-- q013: Most recently visited page per user
+--
+-- Tables:
+--   page_visits(user_id INT, page VARCHAR(50), visit_date DATE)
+-- Output: user_id, page, visit_date
+-- Full statement: drill show q013

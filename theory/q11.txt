@@ -1,1 +1,0 @@
-Q11 [PySpark | Theory | Senior] — What is lazy evaluation in Spark? Why does Spark use it, and what triggers actual computation?

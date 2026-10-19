@@ -1,0 +1,6 @@
+employees:
+  columns:
+    - employee_id: int
+    - department: string(20)
+    - salary: double
+    - hire_date: date

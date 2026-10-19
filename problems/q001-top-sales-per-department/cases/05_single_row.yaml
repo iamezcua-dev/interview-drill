@@ -1,0 +1,7 @@
+name: "Single row in the whole table"
+input:
+  employee_sales:
+    - [7, "LATAM", 2024-06-01, 250.50]
+expected:
+  rows:
+    - ["LATAM", 7, 250.50]

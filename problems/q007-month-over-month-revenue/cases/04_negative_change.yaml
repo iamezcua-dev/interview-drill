@@ -1,0 +1,9 @@
+name: "Revenue drops"
+input:
+  monthly_revenue:
+    - [1, 2000]
+    - [2, 1000]
+expected:
+  rows:
+    - [1, 2000, null, null]
+    - [2, 1000, 2000, -1000]

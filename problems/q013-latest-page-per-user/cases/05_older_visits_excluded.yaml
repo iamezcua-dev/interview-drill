@@ -1,0 +1,8 @@
+name: "Older visits are excluded"
+input:
+  page_visits:
+    - [1, "old", 2023-06-01]
+    - [1, "newest", 2024-06-01]
+expected:
+  rows:
+    - [1, "newest", 2024-06-01]

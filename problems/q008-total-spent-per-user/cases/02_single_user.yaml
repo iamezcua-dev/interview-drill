@@ -1,0 +1,7 @@
+name: "Single user"
+input:
+  transactions:
+    - [1, 101, 5, 2.0]
+expected:
+  rows:
+    - [1, 10.0]

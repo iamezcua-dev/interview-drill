@@ -1,0 +1,9 @@
+name: "Same date in different departments stays isolated"
+input:
+  employee_sales:
+    - [1, "APAC", 2024-01-01, 1000]
+    - [2, "EMEA", 2024-01-01, 2000]
+expected:
+  rows:
+    - ["APAC", 1, 2024-01-01, 1000.00, 1000.00]
+    - ["EMEA", 2, 2024-01-01, 2000.00, 2000.00]

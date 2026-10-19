@@ -1,0 +1,7 @@
+name: "Exactly user_id, page, visit_date"
+input:
+  page_visits:
+    - [1, "home", 2024-01-01]
+expected:
+  rows:
+    - [1, "home", 2024-01-01]

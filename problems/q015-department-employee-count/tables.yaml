@@ -1,0 +1,9 @@
+dept:
+  columns:
+    - department_id: int
+    - department_name: string(50)
+emp:
+  columns:
+    - employee_id: int
+    - department_id: int
+      nullable: true

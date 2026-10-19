@@ -1,0 +1,10 @@
+name: "A department's only employee always wins"
+input:
+  employee_sales:
+    - [1, "APAC", 2024-01-01, 400]
+    - [1, "APAC", 2024-01-02, 600]
+    - [2, "EMEA", 2024-01-01, 900]
+expected:
+  rows:
+    - ["APAC", 1, 1000.00]
+    - ["EMEA", 2, 900.00]

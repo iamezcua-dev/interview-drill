@@ -1,0 +1,14 @@
+name: "Two sales on the same date get their own running totals"
+input:
+  employee_sales:
+    - [1, "APAC", 2024-01-01, 300]
+    - [2, "APAC", 2024-01-01, 700]
+    - [3, "APAC", 2024-01-02, 500]
+expected:
+  asserts:
+    - expr: "len(rows) == 3"
+      message: "expected 3 rows"
+    - expr: "len({r['running_total'] for r in rows if r['sale_date'] == '2024-01-01'}) == 2"
+      message: "rows sharing a sale_date must get distinct running totals (use a ROWS frame, not RANGE)"
+    - expr: "max(r['running_total'] for r in rows if r['sale_date'] == '2024-01-02') == 1500"
+      message: "running_total on 2024-01-02 should be 1500"

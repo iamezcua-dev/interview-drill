@@ -1,0 +1,10 @@
+name: "Several employees above the average"
+input:
+  employees:
+    - [1, "Alice", "APAC", 10000]
+    - [2, "Bob", "APAC", 80000]
+    - [3, "Carol", "APAC", 90000]
+expected:
+  rows:
+    - [2, "Bob", "APAC", 80000]
+    - [3, "Carol", "APAC", 90000]

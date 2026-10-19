@@ -1,0 +1,7 @@
+name: "Exactly at the average is excluded"
+input:
+  employees:
+    - [1, "Alice", "APAC", 100]
+    - [2, "Bob", "APAC", 100]
+expected:
+  rows: []

@@ -1,0 +1,9 @@
+name: "Two months"
+input:
+  monthly_revenue:
+    - [1, 1000]
+    - [2, 1500]
+expected:
+  rows:
+    - [1, 1000, null, null]
+    - [2, 1500, 1000, 500]

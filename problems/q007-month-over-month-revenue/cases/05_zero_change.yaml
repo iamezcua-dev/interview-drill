@@ -1,0 +1,9 @@
+name: "Same revenue twice"
+input:
+  monthly_revenue:
+    - [1, 5000]
+    - [2, 5000]
+expected:
+  rows:
+    - [1, 5000, null, null]
+    - [2, 5000, 5000, 0]
