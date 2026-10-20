@@ -106,8 +106,8 @@ def _table_sql(table: Table, rows: list) -> str:
     return f"SELECT {cast} FROM VALUES {values} AS t({', '.join(names)})"
 
 
-def frames(problem: Problem, case: Case) -> dict:
-    spark = session()
+def frames(problem: Problem, case: Case, spark=None) -> dict:
+    spark = spark or session()
     return {
         table.name: spark.sql(
             _table_sql(table, case.input.get(table.name, []))
@@ -199,18 +199,18 @@ class SparkSqlAdapter:
     def run(
         self, problem: Problem, solution: Path, cases: list[Case]
     ) -> list[Result | SolutionError]:
-        spark = session()
+        base = session()
         statements = spark_statements(solution.read_text(encoding="utf-8"))
         if not statements:
             err = SolutionError("solution is empty: write a SELECT query")
             return [err] * len(cases)
         out: list[Result | SolutionError] = []
         for case in cases:
-            # Views a previous case's solution created must not leak.
-            for view in spark.catalog.listTables():
-                if view.isTemporary:
-                    spark.catalog.dropTempView(view.name)
-            for name, df in frames(problem, case).items():
+            # A fresh session per case: temp views a previous case created
+            # can't leak, and no catalog calls are needed (those require
+            # Hadoop's winutils.exe on Windows).
+            spark = base.newSession()
+            for name, df in frames(problem, case, spark).items():
                 df.createOrReplaceTempView(name)
             try:
                 for stmt in statements[:-1]:
