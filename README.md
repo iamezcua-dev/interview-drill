@@ -1,7 +1,7 @@
 # Interview Drill
 
 Warm-up drills for data engineering interviews. Solve each problem in
-**T-SQL, PySpark, Spark SQL or Scala** (or answer theory questions), and
+**T-SQL, PySpark, Spark SQL or Scala**, and
 let `drill` grade you instantly.
 
 ## Quick start
@@ -74,11 +74,11 @@ re-grades every started solution (slow: it runs all their test cases).
   it and start over any time; the last result set is your answer.
 - **PySpark / Scala**: implement `solution(...)`, which takes one
   DataFrame per table and returns a DataFrame.
-- **Theory**: two parts, both needed for ✅. First, a short quiz in
-  `quiz.yaml` (multiple choice, graded automatically; wrong questions are
-  named but answers aren't revealed). Second, your written explanation in
-  `answer.md`: compare it with the reference, then add a final line
-  `SOLVED`.
+- **Theory** (none published yet; proposals welcome): two parts, both
+  needed for ✅. First, a short quiz in `quiz.yaml` (multiple choice,
+  graded automatically; wrong questions are named but answers aren't
+  revealed). Second, your written explanation in `answer.md`: compare it
+  with the reference, then add a final line `SOLVED`.
 - `drill show q001` prints a statement; `drill next --lang pyspark`
   narrows suggestions.
 - Reference answers live in `problems/<id>/reference/`. Peeking is up to
@@ -154,18 +154,13 @@ duplicate ids, a warning for similar titles).
 | ---- | ------ | --------------------- | -------------------------------------------------- |
 | q001 | Coding | tsql, pyspark, sparksql, scala | Top seller(s) per department              |
 | q002 | Coding | tsql, pyspark, sparksql, scala | Running total of sales per department     |
-| q003 | Theory | Spark                 | Transformations vs actions in Apache Spark         |
 | q004 | Coding | tsql, pyspark, sparksql, scala | Employees earning above their department average |
 | q005 | Coding | tsql, pyspark, sparksql, scala | Customers with orders in every month of 2024 |
-| q006 | Theory | SQL                   | WHERE vs HAVING                                    |
 | q007 | Coding | tsql, pyspark, sparksql, scala | Month-over-month revenue change           |
 | q008 | Coding | tsql, pyspark, sparksql, scala | Total spent per user, highest first       |
-| q009 | Theory | SQL                   | INNER JOIN vs LEFT JOIN vs CROSS JOIN              |
 | q010 | Coding | tsql, pyspark, sparksql, scala | Departments with an average salary above 70,000 |
-| q011 | Theory | Spark                 | Lazy evaluation in Spark                           |
 | q012 | Coding | tsql, pyspark, sparksql, scala | Top 3 customers by total amount spent     |
 | q013 | Coding | tsql, pyspark, sparksql, scala | Most recently visited page per user       |
-| q014 | Theory | SQL                   | CTE vs subquery                                    |
 | q015 | Coding | tsql, pyspark, sparksql, scala | Employee count per department (including empty) |
 
 ## Questions?

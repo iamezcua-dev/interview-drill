@@ -213,3 +213,6 @@ drill.yaml
 
 # uv virtualenv
 .venv/
+
+# Theory questions held back from main until reviewed (local only)
+.proposed-theory-questions/

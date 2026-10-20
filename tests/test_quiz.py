@@ -1,4 +1,3 @@
-from drill import problems as P
 from drill import quiz
 
 
@@ -10,12 +9,13 @@ def test_normalize_accepts_letters_lists_and_commas():
 
 
 def test_stub_keeps_questions_and_drops_answers(tmp_path):
-    problem = P.find("q003")
-    questions = quiz.load(
-        problem.path / "reference" / quiz.QUIZ_FILE, require_answers=True
-    )
+    questions = [
+        quiz.Question("Pick b", {"a": "x", "b": "y"}, frozenset({"b"})),
+        quiz.Question("Pick both", {"a": "x", "b": "y"},
+                      frozenset({"a", "b"})),
+    ]
     stub = tmp_path / "quiz.yaml"
-    stub.write_text(quiz.stub_text(problem.id, problem.title, questions),
+    stub.write_text(quiz.stub_text("q999", "Example", questions),
                     encoding="utf-8")
     reloaded = quiz.load(stub, require_answers=False)
     assert [q.prompt for q in reloaded] == [q.prompt for q in questions]
