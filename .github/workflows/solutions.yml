@@ -1,0 +1,75 @@
+# Solver branches (drill/*). The commit's icon on GitHub means:
+#   green ✓  every solution changed by the push passes
+#   red ✗    at least one of them does not
+#   ⚙️ grey  the commit message contains WIP: not graded (job skipped)
+# Only solutions changed by the push are graded; run
+# `drill status --refresh` locally to re-grade everything.
+name: solutions
+
+on:
+  push:
+    branches: ["drill/**"]
+
+env:
+  # Throwaway database that only exists inside this CI job.
+  DRILL_DB_PASSWORD: Ci-Only_Drill_Passw0rd
+  DRILL_DB_PORT: "1433"
+
+jobs:
+  grade:
+    name: >-
+      ${{ contains(github.event.head_commit.message, 'wip')
+          && '⚙️ In progress (WIP)' || 'Solved?' }}
+    # contains() is case-insensitive, so WIP, wip and Wip all count.
+    if: ${{ !contains(github.event.head_commit.message, 'wip') }}
+    runs-on: ubuntu-latest
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: ${{ env.DRILL_DB_PASSWORD }}
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost
+          -U sa -P \"$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' -b -o /dev/null"
+          --health-interval 10s --health-timeout 5s --health-retries 20
+          --health-start-period 20s
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Solutions changed by this push
+        id: changed
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [[ "$BEFORE" =~ ^0+$ ]] || ! git cat-file -e "$BEFORE" 2>/dev/null
+          then
+            BASE="$(git merge-base origin/main HEAD)"
+          else
+            BASE="$BEFORE"
+          fi
+          git diff --name-only --diff-filter=AM "$BASE" HEAD -- solutions/ \
+            | grep -v '\.gitkeep$' > changed.txt || true
+          cat changed.txt
+          echo "count=$(wc -l < changed.txt)" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-python@v5
+        if: steps.changed.outputs.count != '0'
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-java@v4
+        if: steps.changed.outputs.count != '0'
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: coursier/cache-action@v6
+        if: steps.changed.outputs.count != '0'
+      - uses: VirtusLab/scala-cli-setup@v1
+        if: steps.changed.outputs.count != '0'
+      - if: steps.changed.outputs.count != '0'
+        run: pipx install poetry && poetry install
+      - name: Grade
+        if: steps.changed.outputs.count != '0'
+        run: xargs poetry run drill check --gate < changed.txt

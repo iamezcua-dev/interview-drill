@@ -23,9 +23,22 @@ your OS keychain and installs the git hooks, then runs `drill doctor`.
 poetry run drill start q001 --lang tsql   # copies a stub to solutions/q001/
 # ...write your answer in solutions/q001/solution.tsql.sql...
 poetry run drill test q001                # grade it, as often as you like
-git commit -am "q001(tsql): Attempt 1"    # failures are reported, never blocking
+git commit -am "q001(tsql): WIP"          # ⚙️ in progress: saved, not graded
+git commit -am "q001(tsql): Attempt 2"    # graded: ✅ solved or ❌ not solved
 poetry run drill status                   # your progress
 ```
+
+Commits are never blocked. Each one gets a verdict, printed by the git
+hook and shown as the commit's icon on GitHub:
+
+| Commit message | Local hook and `drill status` | GitHub |
+| -------------- | ----------------------------- | ------ |
+| contains `WIP` (any case) | ⚙️ in progress, not graded | grey ⚙️ In progress (WIP) |
+| changed solutions all pass | ✅ solved | green ✓ |
+| any changed solution fails | ❌ not solved | red ✗ |
+
+Only the problems a commit changes are graded. `drill status --refresh`
+re-grades every started solution (slow: it runs all their test cases).
 
 - **T-SQL / Spark SQL**: a plain `.sql` file, no procedure wrapper. Clear
   it and start over any time; the last result set is your answer.

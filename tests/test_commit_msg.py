@@ -15,3 +15,27 @@ def test_commit_msg(tmp_path, monkeypatch, branch, subject, code):
     msg = tmp_path / "MSG"
     msg.write_text(subject + "\n", encoding="utf-8")
     assert cli.main(["commit-msg", str(msg)]) == code
+
+
+@pytest.mark.parametrize("message,wip", [
+    ("q001(tsql): WIP attempt 2", True),
+    ("wip", True),
+    ("q001(tsql): Attempt 2", False),
+    ("q001: done\n# comment lines mentioning wip are ignored", False),
+])
+def test_is_wip(message, wip):
+    assert cli.is_wip(message) is wip
+
+
+def test_wip_commit_is_not_graded(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(cli, "_branch", lambda: "drill/me")
+    monkeypatch.setattr(
+        cli, "_git",
+        lambda *a: "solutions/q003/answer.md" if a[0] == "diff" else "",
+    )
+    answer = cli.P.find("q003").solution_path(None)
+    monkeypatch.setattr(type(answer), "is_file", lambda self: True)
+    msg = tmp_path / "MSG"
+    msg.write_text("q003: WIP first draft\n", encoding="utf-8")
+    assert cli.main(["commit-msg", str(msg)]) == 0
+    assert "in progress" in capsys.readouterr().out

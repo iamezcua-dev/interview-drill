@@ -1,9 +1,10 @@
 # Installed by `drill setup`. The drill hooks run the same commands as CI
 # (.github/workflows/drill.yml), so local results match GitHub.
 #
-# Solvers are never blocked: `drill check` reports failing solutions and
-# still exits 0, and the auto-fixers below skip solutions/ so they can't
-# rewrite (and therefore reject) a solver's commit.
+# Solvers are never blocked: the drill hook reports failing solutions and
+# still lets the commit through, and the auto-fixers below skip
+# solutions/ so they can't rewrite (and therefore reject) a solver's
+# commit. GitHub then shows the verdict: see .github/workflows/.
 default_install_hook_types: [pre-commit, commit-msg]
 
 repos:
@@ -41,15 +42,14 @@ repos:
         pass_filenames: false
         files: ^problems/
 
-      - id: drill-check
-        name: drill check (grades what you changed; never blocks)
-        entry: poetry run drill check
-        language: system
-        files: ^(solutions|problems)/
-        verbose: true
-
-      - id: drill-commit-msg
-        name: commit message (conventional on main-bound branches)
+      - id: drill-commit
+        # Runs at commit-msg time so it can see "WIP" in the message.
+        # drill/* branches: grades the solutions in this commit and prints
+        # ✅ solved / ❌ not solved / ⚙️ in progress (WIP). Never blocks.
+        # Other branches: conventional messages + reference answers.
+        name: drill (grade this commit)
         entry: poetry run drill commit-msg
         language: system
         stages: [commit-msg]
+        always_run: true
+        verbose: true

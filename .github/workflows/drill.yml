@@ -1,11 +1,10 @@
-# Same commands as the local pre-commit hooks, so results always match.
-#   drill/* branches  -> grade the solver's solutions (failures reported,
-#                        never fatal, exactly like the local hook)
-#   everything else   -> grade every reference answer (must all pass)
+# Tooling and problem bank: every reference answer must pass.
+# Solver branches (drill/*) use solutions.yml instead.
 name: drill
 
 on:
   push:
+    branches-ignore: ["drill/**"]
   pull_request:
 
 env:
@@ -62,14 +61,7 @@ jobs:
       - uses: VirtusLab/scala-cli-setup@v1
       - run: pipx install poetry
       - run: poetry install
-      - name: drill check
-        run: |
-          BRANCH="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
-          if [[ "$BRANCH" == drill/* ]]; then
-            poetry run drill check --all --strict
-          else
-            poetry run drill check --all --reference --strict
-          fi
+      - run: poetry run drill check --all --reference --strict
 
   windows:
     # Portability check: the Spark adapters on Windows.

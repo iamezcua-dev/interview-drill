@@ -103,4 +103,7 @@ The user practices for interviews and asked for a strict mentor.
 
 **Commits during a session:** one commit per problem, only that
 problem's files, never files of problems still in the retry pool.
-Suggested format on drill branches: `q001(tsql): Attempt 2`.
+Suggested format on drill branches: `q001(tsql): Attempt 2`. A message
+containing `WIP` marks work in progress: the commit is saved but not
+graded (⚙️). Without it, the commit is graded: ✅ solved / ❌ not solved,
+locally and as the commit's icon on GitHub.

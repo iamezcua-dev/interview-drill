@@ -10,6 +10,7 @@ Exit codes are the same locally and in CI:
 import argparse
 import os
 import random
+import re
 import shutil
 import subprocess
 import sys
@@ -21,7 +22,7 @@ from drill import runner, scaffold
 from drill.problems import Problem, ProblemError
 from drill.runner import Graded
 
-ICONS = {"pass": "✅", "fail": "❌", "skip": "⏭️ ", "started": "✎ "}
+ICONS = {"pass": "✅", "fail": "❌", "skip": "⏭️ ", "wip": "⚙️ "}
 COMMIT_TYPES = (
     "feat", "fix", "docs", "style", "refactor", "perf", "test", "build",
     "ci", "revert", "chore",
@@ -46,6 +47,17 @@ def _branch() -> str:
         or os.environ.get("GITHUB_REF_NAME")
         or _git("rev-parse", "--abbrev-ref", "HEAD")
     )
+
+
+def is_wip(message: str) -> bool:
+    """A commit whose message contains WIP (any case) is in progress."""
+    lines = [ln for ln in message.splitlines() if not ln.startswith("#")]
+    return "wip" in "\n".join(lines).lower()
+
+
+def _last_commit_is_wip(path: Path) -> bool:
+    message = _git("log", "-1", "--format=%B", "--", str(path))
+    return bool(message) and is_wip(message)
 
 
 def _langs_for(problem: Problem, lang: str | None) -> list[str | None]:
@@ -128,7 +140,7 @@ def _github_report(graded: list[Graded], reference: bool) -> None:
 
 def _run(
     targets: list[tuple[Problem, str | None, Path]],
-    reference: bool, strict: bool, verbose: bool,
+    reference: bool, strict: bool, verbose: bool, gate: bool = False,
 ) -> int:
     if not targets:
         print("Nothing to grade.")
@@ -152,8 +164,10 @@ def _run(
           f"{len(skipped)} skipped")
     if reference and failed:
         return 1
-    if strict and skipped:
+    if (strict or gate) and skipped:
         return 1
+    if gate and failed:
+        return 1  # CI on drill/* branches: red means not solved
     if failed:
         print("Failures are reported, not blocking: keep iterating and "
               "commit whenever you like.")
@@ -295,13 +309,15 @@ def cmd_check(args) -> int:
             targets = [
                 t for p in problems for t in _solution_targets(p, args.lang)
             ]
-        return _run(targets, args.reference, args.strict, args.verbose)
+        return _run(targets, args.reference, args.strict, args.verbose,
+                    gate=args.gate)
     solutions, references = [], []
     for kind, target in _targets_from_paths(args.paths, args.lang):
         (references if kind == "reference" else solutions).append(target)
     code = 0
     if solutions:
-        code = max(code, _run(solutions, False, args.strict, args.verbose))
+        code = max(code, _run(solutions, False, args.strict, args.verbose,
+                              gate=args.gate))
     if references:
         code = max(code, _run(references, True, args.strict, args.verbose))
     if not solutions and not references:
@@ -310,18 +326,26 @@ def cmd_check(args) -> int:
 
 
 def _cell(results: dict, problem: Problem, lang: str | None) -> str:
+    """✅/❌ from the last grading, ⚙️ while in progress, · not started."""
     path = problem.solution_path(lang)
     if not path.is_file():
         return "·"
+    if _last_commit_is_wip(path):
+        return ICONS["wip"].strip()
     cached = results.get(problem.id, {}).get(lang or "theory")
     if cached and abs(cached.get("mtime", 0) - path.stat().st_mtime) < 1e-6:
         return ICONS[cached["status"]].strip()
-    return ICONS["started"].strip()
+    return ICONS["wip"].strip()  # changed since it was last graded
 
 
 def cmd_status(args) -> int:
-    results = runner.load_results()
     problems = P.all_problems()
+    if args.refresh:
+        # Explicit and expensive: re-grade every started solution.
+        targets = [t for p in problems for t in _solution_targets(p, None)]
+        _run(targets, reference=False, strict=False, verbose=False)
+        print()
+    results = runner.load_results()
     header = f"{'id':<5} {'title':<46} " + " ".join(
         f"{lg:<8}" for lg in LANGUAGES
     )
@@ -347,8 +371,8 @@ def cmd_status(args) -> int:
                 parts.append(f"{cell:<8}")
             cells = " ".join(parts)
         print(f"{p.id:<5} {title:<46} {cells}")
-    print("\n✅ passed  ❌ failed  ✎ started, not graded since last edit  "
-          "· not started  — not offered")
+    print("\n✅ solved  ❌ not solved  ⚙️  in progress (WIP commit or "
+          "changed since last graded)  · not started  — not offered")
     pct = int(done * 100 / total) if total else 0
     bar = "█" * (pct // 5) + "░" * (20 - pct // 5)
     print(f"{bar}  {done} / {total} done ({pct}%)")
@@ -499,30 +523,55 @@ def cmd_lint(args) -> int:
     return 2 if errors else 0
 
 
+def _message_ok(subject: str) -> bool:
+    if subject.startswith(("Merge ", "Revert ", "fixup!", "squash!")):
+        return True
+    pattern = (
+        rf"^({'|'.join(COMMIT_TYPES)})(\([a-z0-9][\w./-]*\))?!?: \S.{{2,}}$"
+    )
+    return bool(re.match(pattern, subject)) and len(subject) <= 72
+
+
 def cmd_commit_msg(args) -> int:
-    """Conventional commits only for work headed to main."""
+    """commit-msg hook: lint the message, then grade what this commit adds.
+
+    * drill/* branches: messages are free-form; changed solutions are
+      graded (✅/❌) unless the message contains WIP (⚙️). Never blocks.
+    * other branches: conventional commit messages; changed problems have
+      their reference answers graded, and a failing reference blocks.
+    """
     branch = _branch()
-    if branch.startswith("drill/"):
-        return 0
+    on_drill = branch.startswith("drill/")
     text = Path(args.file).read_text(encoding="utf-8")
     subject = next(
         (ln for ln in text.splitlines()
          if ln.strip() and not ln.startswith("#")),
         "",
     )
-    if subject.startswith(("Merge ", "Revert ", "fixup!", "squash!")):
-        return 0
-    import re
-
-    pattern = (
-        rf"^({'|'.join(COMMIT_TYPES)})(\([a-z0-9][\w./-]*\))?!?: \S.{{2,}}$"
-    )
-    if re.match(pattern, subject) and len(subject) <= 72:
-        return 0
-    print(f"Commit subject must look like 'feat(q016): Add running total "
-          f"problem' (≤72 chars).\nAllowed types: {', '.join(COMMIT_TYPES)}"
-          f"\nGot: {subject!r}\n(Drill branches 'drill/<name>' are exempt.)")
-    return 1
+    if not on_drill and not _message_ok(subject):
+        print(f"Commit subject must look like 'feat(q016): Add running "
+              f"total problem' (≤72 chars).\nAllowed types: "
+              f"{', '.join(COMMIT_TYPES)}\nGot: {subject!r}\n"
+              "(Drill branches 'drill/<name>' are exempt.)")
+        return 1
+    staged = _git("diff", "--cached", "--name-only", "--diff-filter=AM")
+    solutions, references = [], []
+    for kind, target in _targets_from_paths(staged.splitlines(), None):
+        if kind == "solution":
+            solutions.append(target)
+        elif not on_drill:
+            references.append(target)
+    code = 0
+    if solutions and is_wip(text):
+        for problem, lang, _ in solutions:
+            label = lang or "theory"
+            print(f"{problem.id}  {label:<9} {ICONS['wip']} in progress "
+                  "(WIP commit, not graded)")
+    elif solutions:
+        code = _run(solutions, False, False, verbose=False)
+    if references:
+        code = max(code, _run(references, True, False, verbose=False))
+    return code
 
 
 def cmd_setup(args) -> int:
@@ -618,9 +667,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--reference", action="store_true")
     p.add_argument("--strict", action="store_true")
     p.add_argument("-v", "--verbose", action="store_true")
+    p.add_argument("--gate", action="store_true",
+                   help="exit 1 unless every graded solution passes (CI)")
     p.set_defaults(func=cmd_check)
 
     p = sub.add_parser("status", help="progress per problem and language")
+    p.add_argument("--refresh", action="store_true",
+                   help="re-grade every started solution first (slow)")
     p.set_defaults(func=cmd_status)
 
     p = sub.add_parser("next", help="suggest a problem you haven't started")
