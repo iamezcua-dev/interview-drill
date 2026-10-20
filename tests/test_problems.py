@@ -9,9 +9,21 @@ def test_every_problem_loads_and_lints(capsys):
     assert "0 errors" in capsys.readouterr().out
 
 
-@pytest.mark.parametrize("ref", ["q1", "q001", "1", "problems/q001-x"])
+@pytest.mark.parametrize("ref", [
+    "7xm8", "problems/7xm8-top-sales-per-department", "top-sales",
+])
 def test_find_accepts_short_ids(ref):
-    assert P.find(ref).id == "q001"
+    assert P.find(ref).id == "7xm8"
+
+
+def test_new_ids_are_valid_and_unused():
+    import random
+
+    taken = {p.id for p in P.all_problems()}
+    for seed in range(50):
+        pid = P.new_id(random.Random(seed))
+        assert P.ID_RE.match(pid) and pid not in taken
+        assert not set(pid) & set("01ilo")  # no look-alike characters
 
 
 def test_coding_cases_match_table_shapes():

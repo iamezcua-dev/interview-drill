@@ -14,31 +14,34 @@ language-neutral test cases.
 ## Layout and ownership
 
 ```
-problems/q001-<slug>/      owned by main: never edit on a drill branch
+problems/<id>-<slug>/      owned by main: never edit on a drill branch
   problem.md               frontmatter (id, title, type, languages,
                            output, tolerance, sorted_by) + statement
   tables.yaml              input tables with neutral column types
   cases/NN_<name>.yaml     input rows + expected rows / asserts
   stubs/                   starting files copied by `drill start`
   reference/               reference answers (spoilers by design)
-solutions/q001/            owned by the solver; empty on main
+solutions/<id>/            owned by the solver; empty on main
 src/drill/                 grader CLI and language adapters
 drill.example.yaml         documented settings; drill.yaml is local only
 ```
 
 File names: `solution.tsql.sql`, `solution.sparksql.sql`,
 `solution.pyspark.py`, `solution.scala`, `answer.md` + `quiz.yaml`
-(theory). Problem ids
-are `q` + 3 digits. Language keys: `tsql`, `pyspark`, `sparksql`,
-`scala`.
+(theory). Language keys: `tsql`, `pyspark`, `sparksql`, `scala`.
+
+Problem ids are short random codes (4 characters, e.g. `7xm8`) generated
+by `drill new`: unique across forks without coordination, never reused,
+never renamed. Folders are `<id>-<kebab-slug>`; every command accepts the
+id or a unique start of the slug.
 
 ## Commands
 
 ```
 ./drill setup                 # once: Java, SQL Server, password, hooks
 ./drill next [--lang L]       # pick an unstarted problem
-./drill start q001 --lang L   # copy the stub into solutions/
-./drill test q001 [--lang L]  # grade it
+./drill start <id> --lang L   # copy the stub into solutions/
+./drill test <id> [--lang L]  # grade it
 ./drill status                # progress
 ./drill check --all --reference   # all reference answers
 ./drill lint                  # validate problem folders
@@ -69,12 +72,12 @@ user asks; propose a commit message first.
 1. `drill new <kebab-slug> --title "..."` (coding) or add `--type theory`.
 2. Fill `problem.md`, `tables.yaml` and at least 10 `cases/*.yaml`
    covering edge cases (ties, empty input, NULLs, precision, ordering).
-3. `drill stubs qNNN`, then write a reference in every declared language.
+3. `drill stubs <id>`, then write a reference in every declared language.
    Theory: `reference/answer.md` (ends with `SOLVED`) and
    `reference/quiz.yaml` with at least 5 multiple-choice questions
    answerable from the reference; `drill stubs` derives the answer-free
    `stubs/quiz.yaml`.
-4. `drill test qNNN --reference` must be green for every language.
+4. `drill test <id> --reference` must be green for every language.
 5. Expected rows must come from the problem author's intent, not be
    derived from the reference you are testing; derive them by hand or
    from an independent source, and say so in the PR.
@@ -118,7 +121,7 @@ The user practices for interviews and asked for a strict mentor.
 
 **Commits during a session:** one commit per problem, only that
 problem's files, never files of problems still in the retry pool.
-Suggested format on drill branches: `q001(tsql): Attempt 2`. A message
+Suggested format on drill branches: `7xm8(tsql): Attempt 2`. A message
 containing `WIP` marks work in progress: the commit is saved but not
 graded (⚙️). Without it, the commit is graded: ✅ solved / ❌ not solved,
 locally and as the commit's icon on GitHub. A commit with solutions for

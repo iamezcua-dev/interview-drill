@@ -1,7 +1,0 @@
--- q010: Departments with an average salary above 70,000
---
--- Tables:
---   employees(employee_id INT, department VARCHAR(20), salary FLOAT,
---     hire_date DATE)
--- Output: department, avg_salary
--- Full statement: drill show q010

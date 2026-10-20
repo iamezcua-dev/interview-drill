@@ -459,9 +459,7 @@ def cmd_next(args) -> int:
 
 
 def cmd_new(args) -> int:
-    existing = [p.name[:4] for p in config.PROBLEMS_DIR.glob("q*-*")]
-    number = max((int(e[1:]) for e in existing), default=0) + 1
-    pid = f"q{number:03d}"
+    pid = P.new_id()
     slug = args.slug.strip().lower()
     folder = config.PROBLEMS_DIR / f"{pid}-{slug}"
     if not P.FOLDER_RE.match(folder.name):
@@ -656,7 +654,7 @@ def cmd_commit_msg(args) -> int:
         "",
     )
     if not on_drill and not _message_ok(subject):
-        print(f"Commit subject must look like 'feat(q016): Add running "
+        print(f"Commit subject must look like 'feat(<id>): Add running "
               f"total problem' (≤72 chars).\nAllowed types: "
               f"{', '.join(COMMIT_TYPES)}\nGot: {subject!r}\n"
               "(Drill branches 'drill/<name>' are exempt.)")

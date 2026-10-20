@@ -10,8 +10,14 @@ import yaml
 from drill import LANGUAGES, SOLUTION_FILES, THEORY_FILE
 from drill.config import PROBLEMS_DIR, SOLUTIONS_DIR
 
-ID_RE = re.compile(r"^q\d{3}$")
-FOLDER_RE = re.compile(r"^(q\d{3})-[a-z0-9]+(?:-[a-z0-9]+)*$")
+# Problem ids are short random codes (e.g. "k7q2"): unique across forks
+# without coordination, and stable forever. No look-alike characters.
+ID_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz"
+ID_LENGTH = 4
+ID_RE = re.compile(rf"^[{ID_ALPHABET}]{{{ID_LENGTH}}}$")
+FOLDER_RE = re.compile(
+    rf"^([{ID_ALPHABET}]{{{ID_LENGTH}}})-[a-z0-9]+(?:-[a-z0-9]+)*$"
+)
 TYPE_RE = re.compile(
     r"^(int|bigint|double|date|timestamp|boolean|string(\(\d+\))?"
     r"|decimal\(\d+,\s*\d+\))$"
@@ -222,23 +228,46 @@ def load(path: Path) -> Problem:
     return problem
 
 
-def all_problems() -> list[Problem]:
+def _folders() -> list[Path]:
     if not PROBLEMS_DIR.is_dir():
         return []
     return [
-        load(p) for p in sorted(PROBLEMS_DIR.iterdir())
+        p for p in sorted(PROBLEMS_DIR.iterdir())
         if p.is_dir() and not p.name.startswith((".", "_"))
     ]
 
 
+def all_problems() -> list[Problem]:
+    """Every problem, ordered by title (ids are random, so not by id)."""
+    return sorted((load(p) for p in _folders()), key=lambda p: p.title)
+
+
+def new_id(rng=None) -> str:
+    """A random id that no existing problem uses."""
+    import secrets
+
+    choice = rng.choice if rng else secrets.choice
+    taken = {f.name.split("-", 1)[0] for f in _folders()}
+    while True:
+        pid = "".join(choice(ID_ALPHABET) for _ in range(ID_LENGTH))
+        if pid not in taken:
+            return pid
+
+
 def find(ref: str) -> Problem:
-    """Accept `q1`, `q001`, `1` or a full folder name."""
+    """Accept an id (`k7q2`), a folder name, or a unique slug prefix."""
     ref = ref.strip().lower().removeprefix("problems/").rstrip("/")
-    digits = ref.lstrip("q").split("-", 1)[0]
-    if not digits.isdigit():
-        raise ProblemError(f"'{ref}' is not a problem id (e.g. q001)")
-    pid = f"q{int(digits):03d}"
-    for path in PROBLEMS_DIR.glob(f"{pid}-*"):
-        if path.is_dir():
-            return load(path)
-    raise ProblemError(f"no problem with id {pid}")
+    folders = [f for f in _folders() if "-" in f.name]
+    for folder in folders:
+        if ref in (folder.name, folder.name.split("-", 1)[0]):
+            return load(folder)
+    by_slug = [f for f in folders if f.name.split("-", 1)[1].startswith(ref)]
+    if len(by_slug) == 1:
+        return load(by_slug[0])
+    if len(by_slug) > 1:
+        names = ", ".join(f.name for f in by_slug)
+        raise ProblemError(f"'{ref}' matches several problems: {names}")
+    raise ProblemError(
+        f"no problem matches '{ref}'; use its id (see `drill status`) or "
+        "the start of its name"
+    )

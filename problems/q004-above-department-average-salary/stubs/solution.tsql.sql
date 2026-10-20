@@ -1,7 +1,0 @@
--- q004: Employees earning above their department average
---
--- Tables:
---   employees(employee_id INT, name VARCHAR(50), department VARCHAR(10),
---     salary INT)
--- Output: employee_id, name, department, salary
--- Full statement: drill show q004

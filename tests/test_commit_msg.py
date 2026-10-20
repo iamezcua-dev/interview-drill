@@ -4,10 +4,10 @@ from drill import cli
 
 
 @pytest.mark.parametrize("branch,subject,code", [
-    ("feature/x", "feat(q016): Add running total problem", 0),
-    ("feature/x", "fix: Correct q002 tied-date case", 0),
+    ("feature/x", "feat(k7q2): Add running total problem", 0),
+    ("feature/x", "fix: Correct b7x9 tied-date case", 0),
     ("feature/x", "Q15 - SQL", 1),
-    ("drill/eddiejobs", "q001 attempt 2", 0),
+    ("drill/eddiejobs", "7xm8 attempt 2", 0),
     ("feature/x", "Merge branch 'main' into feature/x", 0),
 ])
 def test_commit_msg(tmp_path, monkeypatch, branch, subject, code):
@@ -18,10 +18,10 @@ def test_commit_msg(tmp_path, monkeypatch, branch, subject, code):
 
 
 @pytest.mark.parametrize("message,wip", [
-    ("q001(tsql): WIP attempt 2", True),
+    ("7xm8(tsql): WIP attempt 2", True),
     ("wip", True),
-    ("q001(tsql): Attempt 2", False),
-    ("q001: done\n# comment lines mentioning wip are ignored", False),
+    ("7xm8(tsql): Attempt 2", False),
+    ("7xm8: done\n# comment lines mentioning wip are ignored", False),
 ])
 def test_is_wip(message, wip):
     assert cli.is_wip(message) is wip
@@ -32,13 +32,13 @@ def test_wip_commit_is_not_graded(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(
         cli, "_git",
         lambda *a: (
-            "solutions/q001/solution.pyspark.py" if a[0] == "diff" else ""
+            "solutions/7xm8/solution.pyspark.py" if a[0] == "diff" else ""
         ),
     )
-    answer = cli.P.find("q001").solution_path("pyspark")
+    answer = cli.P.find("7xm8").solution_path("pyspark")
     monkeypatch.setattr(type(answer), "is_file", lambda self: True)
     msg = tmp_path / "MSG"
-    msg.write_text("q001(pyspark): WIP first draft\n", encoding="utf-8")
+    msg.write_text("7xm8(pyspark): WIP first draft\n", encoding="utf-8")
     assert cli.main(["commit-msg", str(msg)]) == 0
     assert "in progress" in capsys.readouterr().out
 
@@ -50,7 +50,7 @@ def test_solutions_off_drill_branches_are_refused(tmp_path, monkeypatch,
     monkeypatch.setattr(
         cli, "_git",
         lambda *a: (
-            "solutions/q001/solution.pyspark.py" if a[0] == "diff" else ""
+            "solutions/7xm8/solution.pyspark.py" if a[0] == "diff" else ""
         ),
     )
     monkeypatch.setattr(type(tmp_path), "is_file", lambda self: True)
@@ -63,13 +63,13 @@ def test_solutions_off_drill_branches_are_refused(tmp_path, monkeypatch,
 
 def test_two_problems_in_one_commit_are_refused(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(cli, "_branch", lambda: "drill/me")
-    staged = ("solutions/q001/solution.pyspark.py\n"
-              "solutions/q002/solution.pyspark.py")
+    staged = ("solutions/7xm8/solution.pyspark.py\n"
+              "solutions/b7x9/solution.pyspark.py")
     monkeypatch.setattr(
         cli, "_git", lambda *a: staged if a[0] == "diff" else ""
     )
     monkeypatch.setattr(type(tmp_path), "is_file", lambda self: True)
     msg = tmp_path / "MSG"
-    msg.write_text("q001 and q002\n", encoding="utf-8")
+    msg.write_text("7xm8 and b7x9\n", encoding="utf-8")
     assert cli.main(["commit-msg", str(msg)]) == 1
     assert "one problem per commit" in capsys.readouterr().out
