@@ -37,7 +37,7 @@ repos:
     hooks:
       - id: drill-lint
         name: drill lint (problem folders are well formed)
-        entry: poetry run drill lint
+        entry: ./drill lint
         language: system
         pass_filenames: false
         files: ^problems/
@@ -48,7 +48,7 @@ repos:
         # ✅ solved / ❌ not solved / ⚙️ in progress (WIP). Never blocks.
         # Other branches: conventional messages + reference answers.
         name: drill (grade this commit)
-        entry: poetry run drill commit-msg
+        entry: ./drill commit-msg
         language: system
         stages: [commit-msg]
         always_run: true

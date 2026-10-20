@@ -1,0 +1,36 @@
+questions:
+  - prompt: "Which of these trigger computation? (select all that apply)"
+    choices:
+      a: "df.select(\"a\")"
+      b: "df.show()"
+      c: "df.write.parquet(path)"
+      d: "df.withColumn(\"x\", ...)"
+    answer: [b, c]
+  - prompt: "What is a main benefit of lazy evaluation?"
+    choices:
+      a: "Each row uses less memory"
+      b: "Catalyst optimizes the whole plan, e.g. pushes filters down"
+      c: "Every DataFrame is cached automatically"
+      d: "No executors are needed"
+    answer: b
+  - prompt: "What does df.cache() do?"
+    choices:
+      a: "Computes and stores the data immediately"
+      b: "Marks it for caching; the next action fills the cache"
+      c: "Shuffles the data"
+      d: "Writes the data to disk"
+    answer: b
+  - prompt: "A UDF has a bug. When does the error usually appear?"
+    choices:
+      a: "When you define the transformation"
+      b: "When an action runs"
+      c: "Never"
+      d: "When the module is imported"
+    answer: b
+  - prompt: "Which call shows the plan without running it?"
+    choices:
+      a: "collect()"
+      b: "explain()"
+      c: "count()"
+      d: "show()"
+    answer: b

@@ -67,6 +67,7 @@ def _post_status(sha: str, state: str, description: str) -> None:
 def _grade_commit(sha: str, files: list[str]) -> tuple[str, str]:
     """Grade the commit's own version of its solution files."""
     from drill.cli import SOLUTION_FILES, THEORY_FILE
+    from drill.quiz import QUIZ_FILE
 
     problem = P.find(files[0].split("/")[1])
     results = []
@@ -74,9 +75,21 @@ def _grade_commit(sha: str, files: list[str]) -> tuple[str, str]:
         for rel in files:
             name = rel.rsplit("/", 1)[-1]
             if problem.is_theory:
-                if name != THEORY_FILE:
+                if name not in (THEORY_FILE, QUIZ_FILE) or any(
+                    r[0] == "theory" for r in results
+                ):
                     continue
-                lang = None
+                # Grade the commit's full answer: explanation + quiz.
+                folder = rel.rsplit("/", 1)[0]
+                for part in (THEORY_FILE, QUIZ_FILE):
+                    try:
+                        text = _git("show", f"{sha}:{folder}/{part}")
+                    except Exception:  # noqa: BLE001 - not in this commit
+                        continue
+                    (Path(tmp) / part).write_text(text, encoding="utf-8")
+                graded = runner.grade(problem, None, Path(tmp) / THEORY_FILE)
+                results.append((graded.label, graded))
+                continue
             else:
                 lang = next(
                     (k for k, v in SOLUTION_FILES.items() if v == name), None

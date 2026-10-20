@@ -7,12 +7,12 @@ connection so temp tables from one case never leak into the next.
 
 from pathlib import Path
 
-from drill import config, types
+from drill import CMD, config, types
 from drill.adapters import Result, SolutionError, Unavailable, short_error
 from drill.problems import Case, Problem
 from drill.sqltext import tsql_batches
 
-HINT = "Run `drill setup` once to create and start SQL Server."
+HINT = f"Run `{CMD} setup` once to create and start SQL Server."
 
 
 def _message(exc: Exception) -> str:
@@ -33,7 +33,7 @@ class TsqlAdapter:
         try:
             import pymssql
         except ImportError as exc:
-            raise Unavailable("pymssql is not installed: poetry install") \
+            raise Unavailable(f"pymssql is not installed: run {CMD} setup") \
                 from exc
         settings = config.db_settings()
         if not settings.password:

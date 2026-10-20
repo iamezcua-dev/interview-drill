@@ -1,0 +1,40 @@
+questions:
+  - prompt: >-
+      You LEFT JOIN 5 departments (left) with employees; 2 departments have
+      no employees. How many departments appear in the result?
+    choices:
+      a: "3"
+      b: "5"
+      c: "0"
+      d: "It depends on the employee count"
+    answer: b
+  - prompt: "How many rows does a CROSS JOIN of 4 stores and 7 dates return?"
+    choices:
+      a: "4"
+      b: "7"
+      c: "11"
+      d: "28"
+    answer: d
+  - prompt: >-
+      In a LEFT JOIN, what does adding WHERE e.active = 1 (a right-table
+      column) do?
+    choices:
+      a: "Nothing"
+      b: "Drops the unmatched rows, so it behaves like an INNER JOIN"
+      c: "Raises an error"
+      d: "Duplicates rows"
+    answer: b
+  - prompt: "Which join returns only rows with a match on both sides?"
+    choices:
+      a: "INNER JOIN"
+      b: "LEFT JOIN"
+      c: "CROSS JOIN"
+      d: "FULL OUTER JOIN"
+    answer: a
+  - prompt: "What happens when the join key is duplicated on the right side?"
+    choices:
+      a: "The duplicates are removed"
+      b: "Matching left rows are multiplied (fan-out)"
+      c: "The query fails"
+      d: "Nothing changes"
+    answer: b

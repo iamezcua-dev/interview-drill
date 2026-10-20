@@ -37,17 +37,25 @@ class Graded:
 
 
 def grade_theory(problem: Problem, path: Path) -> Graded:
+    """Pass = every quiz answer right + the explanation marked SOLVED."""
+    from drill import quiz
+
     lines = [
         ln.strip() for ln in path.read_text(encoding="utf-8").splitlines()
         if ln.strip()
     ]
-    if lines and lines[-1] == SOLVED_MARK:
-        return Graded(problem, None, path, "pass")
-    return Graded(
-        problem, None, path, "fail",
-        f"self-graded: add a final line '{SOLVED_MARK}' once your answer "
-        "is complete",
-    )
+    explained = Outcome(True) if lines and lines[-1] == SOLVED_MARK \
+        else Outcome(False, f"explanation: add a final line '{SOLVED_MARK}' "
+                            "once your written answer is complete")
+    graded = Graded(problem, None, path, "pass")
+    reference = problem.path / "reference" / quiz.QUIZ_FILE
+    if reference.is_file():
+        questions = quiz.load(reference, require_answers=True)
+        graded.cases += quiz.grade(questions, path.with_name(quiz.QUIZ_FILE))
+    graded.cases.append(("explanation", explained))
+    if not all(o.passed for _, o in graded.cases):
+        graded.status = "fail"
+    return graded
 
 
 def grade(problem: Problem, lang: str | None, path: Path) -> Graded:

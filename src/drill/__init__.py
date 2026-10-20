@@ -1,5 +1,10 @@
 """Data engineering interview drills: problems, solutions and graders."""
 
+import os
+
+# How users run drill: the launcher (./drill, or drill.cmd on Windows).
+CMD = "drill" if os.name == "nt" else "./drill"
+
 LANGUAGES = ("tsql", "pyspark", "sparksql", "scala")
 
 SOLUTION_FILES = {

@@ -210,3 +210,6 @@ drill.yaml
 .drill/
 .scala-build/
 .bsp/
+
+# uv virtualenv
+.venv/

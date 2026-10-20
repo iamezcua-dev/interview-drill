@@ -1,0 +1,40 @@
+questions:
+  - prompt: "Which clause can filter on COUNT(*)?"
+    choices:
+      a: "WHERE"
+      b: "HAVING"
+      c: "Both"
+      d: "Neither"
+    answer: b
+  - prompt: "In logical query order, WHERE is applied..."
+    choices:
+      a: "after GROUP BY"
+      b: "before GROUP BY"
+      c: "after SELECT"
+      d: "after ORDER BY"
+    answer: b
+  - prompt: >-
+      What happens with: SELECT dept, AVG(salary) FROM emp
+      WHERE AVG(salary) > 70000 GROUP BY dept?
+    choices:
+      a: "It works"
+      b: "Error: aggregates aren't allowed in WHERE"
+      c: "It returns every department"
+      d: "It behaves exactly like HAVING"
+    answer: b
+  - prompt: >-
+      You filter on a plain column (hire_date >= '2020-01-01') before
+      aggregating. Which is preferable, and why?
+    choices:
+      a: "HAVING, because it runs last"
+      b: "WHERE, because it removes rows before grouping"
+      c: "Either; the cost is always identical"
+      d: "Neither; use ORDER BY"
+    answer: b
+  - prompt: "What does HAVING without GROUP BY do?"
+    choices:
+      a: "It's a syntax error"
+      b: "It treats the whole table as one group"
+      c: "It's the same as WHERE"
+      d: "It groups by every column"
+    answer: b

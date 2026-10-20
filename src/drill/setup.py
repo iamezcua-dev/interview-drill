@@ -12,7 +12,7 @@ import subprocess
 import sys
 import time
 
-from drill import config
+from drill import CMD, config
 
 CONTAINER = "sql-drill"
 HEALTH_TIMEOUT = 180  # first start under Rosetta can be slow
@@ -136,6 +136,35 @@ def ensure_password() -> tuple[str, str]:
     )
 
 
+# --------------------------------------------------------------- java
+
+def _ensure_java() -> None:
+    """Find Java 17 for Spark, or offer to download it (asks first)."""
+    from drill.java import JavaNotFound, download_jdk, find_java_home
+
+    _step("Java 17 for Spark (pyspark, sparksql)")
+    try:
+        home, major = find_java_home()
+        print(f"    found Java {major}: {home}")
+        return
+    except JavaNotFound:
+        pass
+    print("    not found. drill can download Eclipse Temurin 17 (~190 MB)\n"
+          "    into its own cache folder; nothing is installed system-wide.")
+    if not sys.stdin.isatty():
+        print("    skipped (no terminal to ask). Run setup in a terminal.")
+        return
+    reply = input("    Download it now? [y/N] ").strip().lower()
+    if reply not in ("y", "yes"):
+        print("    skipped: PySpark and Spark SQL problems are skipped "
+              "until Java 17 is available.")
+        return
+    try:
+        print(f"    installed: {download_jdk()}")
+    except (JavaNotFound, OSError) as exc:
+        print(f"    download failed: {exc}")
+
+
 # --------------------------------------------------------------- hooks
 
 def _remove_legacy_hook() -> None:
@@ -161,18 +190,20 @@ def setup(skip_db: bool = False, skip_hooks: bool = False) -> int:
     else:
         _step("Using drill.yaml")
 
+    _ensure_java()
+
     if not skip_db:
         exe = engine()
         if not exe:
             raise SetupError(
                 "Docker is not installed: https://docs.docker.com/get-docker/"
                 "\n(Or point DRILL_DB_* at any SQL Server you can reach, and "
-                "run `drill setup --skip-db`.)"
+                f"run `{CMD} setup --skip-db`.)"
             )
         if not engine_running(exe):
             raise SetupError(
                 f"{exe} is installed but not running. Start Docker Desktop "
-                "(or the daemon) and run `drill setup` again."
+                f"(or the daemon) and run `{CMD} setup` again."
             )
         _step("SQL Server password")
         password, source = ensure_password()
@@ -210,7 +241,7 @@ def setup(skip_db: bool = False, skip_hooks: bool = False) -> int:
                    "--hook-type", "pre-commit", "--hook-type", "commit-msg")
         if out.returncode != 0:
             print("    skipped: pre-commit is not installed "
-                  "(poetry install installs it)")
+                  f"({CMD} setup installs it)")
         else:
             print("    installed")
 

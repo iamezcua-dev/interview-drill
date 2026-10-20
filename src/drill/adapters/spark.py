@@ -8,7 +8,7 @@ import sys
 import traceback
 from pathlib import Path
 
-from drill import types
+from drill import CMD, types
 from drill.adapters import Result, SolutionError, Unavailable, short_error
 from drill.problems import Case, Problem, Table
 from drill.sqltext import spark_statements
@@ -31,7 +31,7 @@ def session():
     try:
         from pyspark.sql import SparkSession
     except ImportError as exc:
-        raise Unavailable("pyspark is not installed: poetry install") from exc
+        raise Unavailable(f"pyspark is not installed: run {CMD} setup") from exc
     os.environ.setdefault("PYSPARK_PYTHON", sys.executable)
     os.environ.setdefault("PYSPARK_DRIVER_PYTHON", sys.executable)
     _session = (

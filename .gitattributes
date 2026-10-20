@@ -1,0 +1,3 @@
+# Batch files need CRLF (labels/goto break with LF); the POSIX launcher LF.
+*.cmd text eol=crlf
+/drill text eol=lf

@@ -1,0 +1,39 @@
+# q014: CTE vs subquery
+# Answer every question with one letter (answer: b) or, when it
+# says "select all that apply", a list (answer: [a, c]).
+questions:
+  - prompt: "What can a CTE do that an inline derived table can't? (select all that apply)"
+    choices:
+      a: "Be referenced more than once in the same statement"
+      b: "Be recursive"
+      c: "Have its own index"
+      d: "Persist across statements"
+    answer:
+  - prompt: "In SQL Server, what usually happens to a non-recursive CTE that is referenced twice?"
+    choices:
+      a: "It's materialized once and reused"
+      b: "It's inlined, so it may be evaluated twice"
+      c: "It's stored as a temp table"
+      d: "It's cached across sessions"
+    answer:
+  - prompt: "What is the scope of a CTE?"
+    choices:
+      a: "The whole session"
+      b: "Only the single statement that follows it"
+      c: "The whole database"
+      d: "The current transaction"
+    answer:
+  - prompt: "How do you usually filter on a window function result (rank = 1)?"
+    choices:
+      a: "In the WHERE clause of the same SELECT"
+      b: "Compute it in a CTE or subquery, then filter outside"
+      c: "With HAVING"
+      d: "It isn't possible"
+    answer:
+  - prompt: "What fits best for a short, single-use membership check?"
+    choices:
+      a: "A recursive CTE"
+      b: "WHERE x IN (subquery) or EXISTS"
+      c: "A temp table"
+      d: "A view"
+    answer:

@@ -17,12 +17,13 @@ import sys
 from pathlib import Path
 
 from drill import (
-    LANGUAGES, MAINTAINER_EMAIL, SOLUTION_FILES, THEORY_FILE, adapters,
+    CMD, LANGUAGES, MAINTAINER_EMAIL, SOLUTION_FILES, THEORY_FILE, adapters,
     config,
 )
 from drill import problems as P
 from drill import runner, scaffold
 from drill.problems import Problem, ProblemError
+from drill.quiz import QUIZ_FILE
 from drill.runner import Graded
 
 ICONS = {"pass": "✅", "fail": "❌", "skip": "⏭️ ", "wip": "⚙️ "}
@@ -123,7 +124,7 @@ def _print_graded(g: Graded, verbose: bool) -> None:
         if shown and index == shown:
             hidden = sum(len(n) for n in list(groups.values())[shown:])
             print(f"    ... {hidden} more failing cases "
-                  f"(drill test {g.problem.id} shows all)")
+                  f"({CMD} test {g.problem.id} shows all)")
             break
         if len(names) == len(g.cases) > 1:
             label = "all cases"
@@ -231,7 +232,7 @@ def _targets_from_paths(paths: list[str], lang: str | None):
             continue
         if parts[0] == "solutions":
             name = parts[-1]
-            if problem.is_theory and name == THEORY_FILE:
+            if problem.is_theory and name in (THEORY_FILE, QUIZ_FILE):
                 key = (problem.id, None, "s")
                 target = (problem, None, problem.solution_path(None))
             else:
@@ -289,7 +290,7 @@ def cmd_start(args) -> int:
         if not lang and len(problem.languages) == 1:
             lang = problem.languages[0]
         if not lang:
-            print(f"Pick a language: drill start {problem.id} --lang "
+            print(f"Pick a language: {CMD} start {problem.id} --lang "
                   f"<{'|'.join(problem.languages)}>  "
                   "(or set default_lang in drill.yaml)")
             return 1
@@ -305,9 +306,16 @@ def cmd_start(args) -> int:
         else:
             target.write_text(scaffold.stub(problem, lang), encoding="utf-8")
         print(f"Created {target.relative_to(config.ROOT)}")
+    quiz_stub = problem.path / "stubs" / QUIZ_FILE
+    quiz_target = target.with_name(QUIZ_FILE)
+    if problem.is_theory and quiz_stub.is_file() and not quiz_target.exists():
+        shutil.copyfile(quiz_stub, quiz_target)
+        print(f"Created {quiz_target.relative_to(config.ROOT)} (answer "
+              "every question; it's graded together with your "
+              "explanation)")
     print()
     cmd_show(argparse.Namespace(problem=problem.id))
-    print(f"\nGrade it with: drill test {problem.id}"
+    print(f"\nGrade it with: {CMD} test {problem.id}"
           + (f" --lang {lang}" if lang else ""))
     branch = _branch()
     if not branch.startswith("drill/"):
@@ -323,7 +331,7 @@ def cmd_test(args) -> int:
         targets = list(_solution_targets(problem, args.lang))
         if not targets:
             hint = f" --lang {args.lang}" if args.lang else ""
-            print(f"No solution yet. Start one: drill start "
+            print(f"No solution yet. Start one: {CMD} start "
                   f"{problem.id}{hint}")
             return 0
     return _run(targets, args.reference, args.strict, verbose=True)
@@ -433,7 +441,7 @@ def cmd_next(args) -> int:
             candidates.append((p, None))
     if not candidates:
         print("You have started every matching problem. Revisit one with "
-              "`drill status`, or add new ones with `drill new`.")
+              f"`{CMD} status`, or add new ones with `{CMD} new`.")
         return 0
     problem, lang = (
         random.choice(candidates) if args.random else candidates[0]
@@ -443,10 +451,10 @@ def cmd_next(args) -> int:
     )
     print(f"Next: {problem.id} {problem.title} [{kind}]")
     if problem.is_theory:
-        print(f"  drill start {problem.id}")
+        print(f"  {CMD} start {problem.id}")
     else:
         for lg in [lang] if lang else problem.languages:
-            print(f"  drill start {problem.id} --lang {lg}")
+            print(f"  {CMD} start {problem.id} --lang {lg}")
     return 0
 
 
@@ -468,6 +476,11 @@ def cmd_new(args) -> int:
     ]
     if args.type == "theory":
         front.append("topic: sql  # or spark")
+        (folder / "reference" / QUIZ_FILE).write_text(
+            "questions:\n  - prompt: \"...\"\n    choices:\n"
+            "      a: \"...\"\n      b: \"...\"\n    answer: a\n",
+            encoding="utf-8",
+        )
     else:
         front += [
             f"languages: [{', '.join(languages)}]",
@@ -492,7 +505,7 @@ def cmd_new(args) -> int:
         )
     print(f"Created {folder.relative_to(config.ROOT)}")
     print("Next: fill problem.md, tables.yaml and cases/, then run "
-          f"`drill stubs {pid}` to generate stubs and write references.")
+          f"`{CMD} stubs {pid}` to generate stubs and write references.")
     return 0
 
 
@@ -512,7 +525,23 @@ def cmd_stubs(args) -> int:
             ref.parent.mkdir(parents=True, exist_ok=True)
             ref.write_text(scaffold.stub(problem, lang), encoding="utf-8")
             print(f"write {ref.relative_to(config.ROOT)}")
+    if problem.is_theory:
+        ref_quiz = problem.path / "reference" / QUIZ_FILE
+        if ref_quiz.is_file():
+            stub_quiz = problem.path / "stubs" / QUIZ_FILE
+            stub_quiz.write_text(_quiz_stub(problem), encoding="utf-8")
+            print(f"write {stub_quiz.relative_to(config.ROOT)} (from "
+                  "reference/quiz.yaml, answers removed)")
     return 0
+
+
+def _quiz_stub(problem: Problem) -> str:
+    from drill import quiz
+
+    questions = quiz.load(
+        problem.path / "reference" / QUIZ_FILE, require_answers=True
+    )
+    return quiz.stub_text(problem.id, problem.title, questions)
 
 
 MIN_CASES = 10
@@ -528,6 +557,28 @@ def _similar_titles(problems: list[Problem], threshold: float = 0.8):
             ).ratio()
             if ratio >= threshold:
                 yield a, b
+
+
+def _lint_quiz(problem: Problem) -> list[str]:
+    from drill import quiz
+
+    ref = problem.path / "reference" / QUIZ_FILE
+    if not ref.is_file():
+        return [f"{problem.id}: missing reference/{QUIZ_FILE}"]
+    try:
+        questions = quiz.load(ref, require_answers=True)
+    except ProblemError as exc:
+        return [str(exc)]
+    errors = []
+    if len(questions) < quiz.MIN_QUESTIONS:
+        errors.append(f"{problem.id}: quiz needs at least "
+                      f"{quiz.MIN_QUESTIONS} questions, has {len(questions)}")
+    stub = problem.path / "stubs" / QUIZ_FILE
+    if not stub.is_file() or stub.read_text(encoding="utf-8") != \
+            _quiz_stub(problem):
+        errors.append(f"{problem.id}: stubs/{QUIZ_FILE} is out of date; "
+                      f"run {CMD} stubs {problem.id}")
+    return errors
 
 
 def cmd_lint(args) -> int:
@@ -550,6 +601,8 @@ def cmd_lint(args) -> int:
                 )
         except ProblemError as exc:
             errors.append(str(exc))
+        if p.is_theory:
+            errors += _lint_quiz(p)
         for lang in _langs_for(p, None):
             for path in (p.stub_path(lang), p.reference_path(lang)):
                 if not path.is_file():
@@ -659,7 +712,7 @@ def cmd_setup(args) -> int:
         return 1
     print("\n==> Checking toolchains")
     code = cmd_doctor(args)
-    print("\nAll set. Try: drill next")
+    print(f"\nAll set. Try: {CMD} next")
     return code
 
 
@@ -700,7 +753,7 @@ def cmd_doctor(args) -> int:
     )
     line(True if installed else None, "git hooks",
          "installed" if installed else
-         "run: poetry run pre-commit install")
+         f"run: {CMD} setup")
     return 0 if ok else 1
 
 

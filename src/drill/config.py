@@ -19,7 +19,24 @@ from typing import Any
 
 import yaml
 
-ROOT = Path(__file__).resolve().parent.parent
+def _find_root() -> Path:
+    """The repo root: the nearest folder with problems/ and pyproject.toml.
+
+    Searched upward from the current directory, so drill works from any
+    subfolder; falls back to where this package lives (src/drill).
+    """
+    if os.environ.get("DRILL_ROOT"):
+        return Path(os.environ["DRILL_ROOT"]).resolve()
+    here = Path.cwd().resolve()
+    for folder in (here, *here.parents):
+        if (folder / "problems").is_dir() and (
+            folder / "pyproject.toml"
+        ).is_file():
+            return folder
+    return Path(__file__).resolve().parents[2]
+
+
+ROOT = _find_root()
 PROBLEMS_DIR = ROOT / "problems"
 SOLUTIONS_DIR = ROOT / "solutions"
 CACHE_DIR = ROOT / ".drill"

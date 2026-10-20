@@ -7,8 +7,8 @@
 
 ## Verification checklist
 
-- [ ] `poetry run drill lint` passes (at least 10 cases, all files present).
-- [ ] `poetry run drill test <id> --reference` passes in **every** offered
+- [ ] `./drill lint` passes (at least 10 cases, all files present).
+- [ ] `./drill test <id> --reference` passes in **every** offered
       language.
 - [ ] The expected rows in `cases/` come from the problem's intent: worked
       out by hand or from an independent source, **not** copied from the

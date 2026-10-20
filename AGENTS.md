@@ -22,27 +22,31 @@ problems/q001-<slug>/      owned by main: never edit on a drill branch
   stubs/                   starting files copied by `drill start`
   reference/               reference answers (spoilers by design)
 solutions/q001/            owned by the solver; empty on main
-drill/                     grader CLI and language adapters
+src/drill/                 grader CLI and language adapters
 drill.example.yaml         documented settings; drill.yaml is local only
 ```
 
 File names: `solution.tsql.sql`, `solution.sparksql.sql`,
-`solution.pyspark.py`, `solution.scala`, `answer.md` (theory). Problem ids
+`solution.pyspark.py`, `solution.scala`, `answer.md` + `quiz.yaml`
+(theory). Problem ids
 are `q` + 3 digits. Language keys: `tsql`, `pyspark`, `sparksql`,
 `scala`.
 
 ## Commands
 
 ```
-poetry run drill setup                 # once: SQL Server, password, hooks
-poetry run drill next [--lang L]       # pick an unstarted problem
-poetry run drill start q001 --lang L   # copy the stub into solutions/
-poetry run drill test q001 [--lang L]  # grade it
-poetry run drill status                # progress
-poetry run drill check --all --reference   # all reference answers
-poetry run drill lint                  # validate problem folders
-poetry run pytest                      # tests for drill itself
+./drill setup                 # once: Java, SQL Server, password, hooks
+./drill next [--lang L]       # pick an unstarted problem
+./drill start q001 --lang L   # copy the stub into solutions/
+./drill test q001 [--lang L]  # grade it
+./drill status                # progress
+./drill check --all --reference   # all reference answers
+./drill lint                  # validate problem folders
+uv run pytest                 # tests for drill itself
 ```
+
+`./drill` (Windows: `drill.cmd`) runs the CLI through uv, which manages
+Python and dependencies; never ask users to install Python or Poetry.
 
 Never run git commands that commit, push or rewrite history unless the
 user asks; propose a commit message first.
@@ -66,6 +70,10 @@ user asks; propose a commit message first.
 2. Fill `problem.md`, `tables.yaml` and at least 10 `cases/*.yaml`
    covering edge cases (ties, empty input, NULLs, precision, ordering).
 3. `drill stubs qNNN`, then write a reference in every declared language.
+   Theory: `reference/answer.md` (ends with `SOLVED`) and
+   `reference/quiz.yaml` with at least 5 multiple-choice questions
+   answerable from the reference; `drill stubs` derives the answer-free
+   `stubs/quiz.yaml`.
 4. `drill test qNNN --reference` must be green for every language.
 5. Expected rows must come from the problem author's intent, not be
    derived from the reference you are testing; derive them by hand or

@@ -1,0 +1,39 @@
+questions:
+  - prompt: "Which of these are actions? (select all that apply)"
+    choices:
+      a: "df.filter(...)"
+      b: "df.count()"
+      c: "df.withColumn(...)"
+      d: "df.collect()"
+    answer: [b, d]
+  - prompt: "What does Spark do when you call df.filter(...).select(...)?"
+    choices:
+      a: "Runs a job immediately"
+      b: "Only records the steps in the plan; nothing runs yet"
+      c: "Caches the intermediate result"
+      d: "Writes the result to disk"
+    answer: b
+  - prompt: "Which transformation is wide (needs a shuffle)?"
+    choices:
+      a: "select"
+      b: "filter"
+      c: "groupBy().agg()"
+      d: "withColumn"
+    answer: c
+  - prompt: >-
+      Without caching, you call df.count() and then df.write.parquet(...)
+      on the same expensive DataFrame. How many times is its lineage
+      computed?
+    choices:
+      a: "Once"
+      b: "Twice"
+      c: "Never"
+      d: "Once per partition, then reused"
+    answer: b
+  - prompt: "Why can collect() be dangerous on large data?"
+    choices:
+      a: "It always triggers a shuffle"
+      b: "It brings every row to the driver, which can run out of memory"
+      c: "It clears the cache"
+      d: "It is a transformation, so it never runs"
+    answer: b

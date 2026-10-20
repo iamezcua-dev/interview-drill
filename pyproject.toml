@@ -3,32 +3,32 @@ name = "de-interview-drill"
 version = "0.1.0"
 description = "Data engineering interview drills: T-SQL, PySpark, Spark SQL and Scala."
 authors = [
-    {name = "Eddie Jobs",email = "iamezcua.dev@gmail.com"}
+    {name = "Eddie Jobs", email = "iamezcua.dev@gmail.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "pyspark (>=3.5,<4.0.0)",
-    "pyyaml (>=6.0,<7.0)",
-    "pymssql (>=2.3,<3.0)",
-    "keyring (>=25.0,<26.0)"
+    "pyspark>=3.5,<4.0",
+    "pyyaml>=6.0,<7.0",
+    "pymssql>=2.3,<3.0",
+    "keyring>=25.0,<26.0",
 ]
 
 [project.scripts]
 drill = "drill.cli:main"
 
-[tool.poetry]
-packages = [{include = "drill"}]
-
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/drill"]
 
 [dependency-groups]
 dev = [
-    "pytest (>=9.0.2,<10.0.0)",
-    "ruff (>=0.15.7,<0.16.0)",
-    "pre-commit (>=4.0,<5.0)"
+    "pytest>=9.0.2,<10.0",
+    "ruff>=0.15.7,<0.16",
+    "pre-commit>=4.0,<5.0",
 ]
 
 [tool.pytest.ini_options]

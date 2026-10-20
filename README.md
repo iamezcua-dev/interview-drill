@@ -6,16 +6,27 @@ let `drill` grade you instantly.
 
 ## Quick start
 
+All you need is **git** (plus Docker for T-SQL problems). No Python,
+Poetry or Java install is required.
+
 ```bash
-poetry install                 # Python deps (needs Python 3.12+)
-poetry run drill setup         # SQL Server, password, git hooks, your branch
-poetry run drill next          # suggests a problem you haven't started
+git clone https://github.com/iamezcua-dev/interview-drill.git
+cd interview-drill
+./drill setup        # Windows (cmd or PowerShell): drill setup
+./drill next         # suggests a problem you haven't started
 ```
 
-`drill setup` is safe to re-run. It creates your local `drill.yaml`, starts
-a SQL Server container (`compose.yaml`), stores a generated password in
-your OS keychain, installs the git hooks, puts a fresh clone on your own
-branch **`drill/<your-github-login>`**, and finally runs `drill doctor`.
+`./drill` (or `drill.cmd` on Windows) is a small launcher. The first time,
+if [uv](https://docs.astral.sh/uv/) is missing, it explains what it is and
+**asks before installing it**. uv then downloads the right Python and
+drill's dependencies by itself, and your shell profile is never edited.
+
+`drill setup` is safe to re-run. It creates your local `drill.yaml`,
+offers to download Java 17 for Spark if you don't have it (into drill's own
+cache, nothing system-wide), starts a SQL Server container
+(`compose.yaml`), stores a generated password in your OS keychain,
+installs the git hooks, puts a fresh clone on your own branch
+**`drill/<your-github-login>`**, and finally runs `drill doctor`.
 
 > **Your solutions always live on `drill/<username>`.** Commit there, push
 > it here to share your approaches (`git push -u origin drill/<username>`),
@@ -27,12 +38,12 @@ branch **`drill/<your-github-login>`**, and finally runs `drill doctor`.
 ## The daily loop
 
 ```bash
-poetry run drill start q001 --lang tsql   # copies a stub to solutions/q001/
+./drill start q001 --lang tsql            # copies a stub to solutions/q001/
 # ...write your answer in solutions/q001/solution.tsql.sql...
-poetry run drill test q001                # grade it, as often as you like
+./drill test q001                         # grade it, as often as you like
 git commit -am "q001(tsql): WIP"          # ⚙️ in progress: saved, not graded
 git commit -am "q001(tsql): Attempt 2"    # graded: ✅ solved or ❌ not solved
-poetry run drill status                   # your progress
+./drill status                            # your progress
 ```
 
 **One problem per commit.** A commit with solutions for two problems is
@@ -63,8 +74,11 @@ re-grades every started solution (slow: it runs all their test cases).
   it and start over any time; the last result set is your answer.
 - **PySpark / Scala**: implement `solution(...)`, which takes one
   DataFrame per table and returns a DataFrame.
-- **Theory**: write your answer in `answer.md`, and add a final line
-  `SOLVED` when you're happy with it.
+- **Theory**: two parts, both needed for ✅. First, a short quiz in
+  `quiz.yaml` (multiple choice, graded automatically; wrong questions are
+  named but answers aren't revealed). Second, your written explanation in
+  `answer.md`: compare it with the reference, then add a final line
+  `SOLVED`.
 - `drill show q001` prints a statement; `drill next --lang pyspark`
   narrows suggestions.
 - Reference answers live in `problems/<id>/reference/`. Peeking is up to
@@ -74,8 +88,9 @@ re-grades every started solution (slow: it runs all their test cases).
 
 | Language | Needs | Notes |
 | -------- | ----- | ----- |
+| All | git | `./drill` brings uv, Python and the dependencies (asks first) |
 | T-SQL | Docker (or Podman) | `drill setup` runs SQL Server 2022; it auto-starts when you test |
-| PySpark, Spark SQL | Java 17 | Auto-detected; or set `java_home` in `drill.yaml` |
+| PySpark, Spark SQL | Java 17 | Auto-detected, or `drill setup` offers to download it |
 | Scala | [scala-cli](https://scala-cli.virtuslab.org/install) | Fetches Scala, Spark and its own JDK on first run |
 
 A missing toolchain only skips that language, so you can drill the
@@ -124,9 +139,11 @@ duplicate ids, a warning for similar titles).
 ### Proposing a problem
 
 1. Fork this repo and create `problem/<id>-<slug>` in your fork.
-2. `drill new <slug> --title "..."`, fill `problem.md`, `tables.yaml` and
-   `cases/`, then `drill stubs <id>` and write the references.
-3. `drill test <id> --reference` must pass in every language.
+2. `./drill new <slug> --title "..."`, fill `problem.md`, `tables.yaml`
+   and `cases/`, then `./drill stubs <id>` and write the references. For a
+   theory problem, write `reference/answer.md` and `reference/quiz.yaml`
+   (at least 5 questions); `./drill stubs` derives the answer-free quiz.
+3. `./drill test <id> --reference` must pass in every language.
 4. Open a PR and complete the checklist. In particular, explain how the
    expected rows were derived: they must come from the problem's intent,
    not from your reference solution's output. See AGENTS.md for details.
