@@ -60,6 +60,31 @@ def _last_commit_is_wip(path: Path) -> bool:
     return bool(message) and is_wip(message)
 
 
+def suggested_branch() -> str:
+    """drill/<github-login>, falling back to the git user name."""
+    login = ""
+    if shutil.which("gh"):
+        try:
+            login = subprocess.run(
+                ["gh", "api", "user", "--jq", ".login"],
+                capture_output=True, text=True, timeout=10,
+            ).stdout.strip()
+        except (OSError, subprocess.TimeoutExpired):
+            login = ""
+    if not login:
+        login = _git("config", "user.name")
+    slug = re.sub(r"[^a-z0-9]+", "-", login.lower()).strip("-")
+    return f"drill/{slug or 'me'}"
+
+
+def _branch_hint(branch: str) -> str:
+    target = suggested_branch()
+    exists = bool(_git("rev-parse", "--verify", "--quiet", target))
+    switch = f"git switch {target}" if exists else f"git switch -c {target}"
+    return (f"Solutions live on your own drill/<username> branch, not on "
+            f"'{branch}'.\n  {switch}")
+
+
 def _langs_for(problem: Problem, lang: str | None) -> list[str | None]:
     if problem.is_theory:
         return [None]
@@ -281,6 +306,9 @@ def cmd_start(args) -> int:
     cmd_show(argparse.Namespace(problem=problem.id))
     print(f"\nGrade it with: drill test {problem.id}"
           + (f" --lang {lang}" if lang else ""))
+    branch = _branch()
+    if not branch.startswith("drill/"):
+        print(f"\n⚠️  {_branch_hint(branch)}")
     return 0
 
 
@@ -484,6 +512,21 @@ def cmd_stubs(args) -> int:
     return 0
 
 
+MIN_CASES = 10
+
+
+def _similar_titles(problems: list[Problem], threshold: float = 0.8):
+    from difflib import SequenceMatcher
+
+    for i, a in enumerate(problems):
+        for b in problems[i + 1:]:
+            ratio = SequenceMatcher(
+                None, a.title.lower(), b.title.lower()
+            ).ratio()
+            if ratio >= threshold:
+                yield a, b
+
+
 def cmd_lint(args) -> int:
     errors = []
     try:
@@ -497,8 +540,11 @@ def cmd_lint(args) -> int:
             errors.append(f"{p.id}: duplicate id")
         ids.add(p.id)
         try:
-            if not p.is_theory:
-                p.cases()
+            if not p.is_theory and len(p.cases()) < MIN_CASES:
+                errors.append(
+                    f"{p.id}: needs at least {MIN_CASES} cases, has "
+                    f"{len(p.cases())}"
+                )
         except ProblemError as exc:
             errors.append(str(exc))
         for lang in _langs_for(p, None):
@@ -517,6 +563,10 @@ def cmd_lint(args) -> int:
                 f"solutions must not land on main: "
                 f"{f.relative_to(config.ROOT)}"
             )
+    for a, b in _similar_titles(problems):
+        print(f"WARN  {a.id} and {b.id} have very similar titles; make sure "
+              f"one isn't a duplicate:\n      {a.title!r}\n      "
+              f"{b.title!r}")
     for e in errors:
         print(f"ERROR {e}")
     print(f"{len(problems)} problems checked, {len(errors)} errors")
@@ -563,6 +613,10 @@ def cmd_commit_msg(args) -> int:
         elif not on_drill:
             references.append(target)
     ids = sorted({problem.id for problem, _, _ in solutions})
+    if solutions and not on_drill:
+        print(f"Refused: {_branch_hint(branch)}\nYour staged files stay "
+              "staged; switch branches and commit again.")
+        return 1
     if on_drill and len(ids) > 1:
         print(f"Refused: one problem per commit, but this commit has "
               f"{', '.join(ids)}.\nCommit them separately, e.g. "
@@ -577,6 +631,8 @@ def cmd_commit_msg(args) -> int:
                   "(WIP commit, not graded)")
     elif solutions:
         code = _run(solutions, False, False, verbose=False)
+    if solutions:
+        print(f"\nShare your approach: git push -u origin {branch}")
     if references:
         code = max(code, _run(references, True, False, verbose=False))
     return code

@@ -41,6 +41,22 @@ def test_wip_commit_is_not_graded(tmp_path, monkeypatch, capsys):
     assert "in progress" in capsys.readouterr().out
 
 
+def test_solutions_off_drill_branches_are_refused(tmp_path, monkeypatch,
+                                                  capsys):
+    monkeypatch.setattr(cli, "_branch", lambda: "main")
+    monkeypatch.setattr(cli, "suggested_branch", lambda: "drill/me")
+    monkeypatch.setattr(
+        cli, "_git",
+        lambda *a: "solutions/q003/answer.md" if a[0] == "diff" else "",
+    )
+    monkeypatch.setattr(type(tmp_path), "is_file", lambda self: True)
+    msg = tmp_path / "MSG"
+    msg.write_text("feat: Add my answer\n", encoding="utf-8")
+    assert cli.main(["commit-msg", str(msg)]) == 1
+    out = capsys.readouterr().out
+    assert "drill/<username>" in out and "git switch -c drill/me" in out
+
+
 def test_two_problems_in_one_commit_are_refused(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(cli, "_branch", lambda: "drill/me")
     staged = "solutions/q003/answer.md\nsolutions/q006/answer.md"

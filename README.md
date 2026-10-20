@@ -8,14 +8,20 @@ let `drill` grade you instantly.
 
 ```bash
 poetry install                 # Python deps (needs Python 3.12+)
-poetry run drill setup         # SQL Server container, password, git hooks
-git switch -c drill/<your-github-handle>
+poetry run drill setup         # SQL Server, password, git hooks, your branch
 poetry run drill next          # suggests a problem you haven't started
 ```
 
 `drill setup` is safe to re-run. It creates your local `drill.yaml`, starts
 a SQL Server container (`compose.yaml`), stores a generated password in
-your OS keychain and installs the git hooks, then runs `drill doctor`.
+your OS keychain, installs the git hooks, puts a fresh clone on your own
+branch **`drill/<your-github-login>`**, and finally runs `drill doctor`.
+
+> **Your solutions always live on `drill/<username>`.** Commit there, push
+> it here to share your approaches (`git push -u origin drill/<username>`),
+> and merge `main` into it whenever you want new problems. It is never
+> merged into `main`. The git hook refuses solution commits on any other
+> branch and tells you how to switch.
 
 ## The daily loop
 
@@ -88,17 +94,41 @@ WSL) keep it in `drill.yaml`.
 
 ## Branches and contributing
 
-- `main` holds problems, references and tooling. It never contains
-  solutions, so `git merge main` into your drill branch never conflicts.
-- `drill/<handle>`: your personal solutions. Commit freely.
-- `problem/<id>-<slug>`: new problems, via a PR to `main`. Use
-  conventional commits (`feat(q016): Add ...`) on these branches.
-- CI runs the same `drill` commands as your local hooks. On `drill/*` it
-  grades your solutions; elsewhere every reference answer must pass.
+| Branch | Who | Where | Goes into `main`? |
+| ------ | --- | ----- | ----------------- |
+| `main` | maintainer | this repo, protected | is `main` |
+| `drill/<username>` | every solver | pushed to this repo (ask for collaborator access) | **never**: it only receives `main` |
+| `problem/<id>-<slug>` | contributors | **your fork** | via a PR, after review |
 
-Adding a problem: `drill new <slug> --title "..."`, fill the folder, then
-`drill stubs <id>` and write the references. See AGENTS.md for the full
-checklist.
+- `main` holds problems, reference answers and tooling, never solutions,
+  so `git merge main` into your drill branch never conflicts. Pull
+  requests need one approval and passing checks.
+- On `drill/*` branches, CI flags each solution commit (✅/❌/⚙️). On every
+  other branch and on PRs, every reference answer must pass.
+
+### How a problem is verified
+
+Grading is deterministic, with no AI involved. Each problem has at least
+10 test cases (`cases/*.yaml`): fixed input rows plus the exact expected
+output rows. `drill` runs a solution on the real engine (SQL Server or
+Spark) and compares the **output data**: column names, every row, and
+the sort order when the problem requires one. Numbers are compared with
+a small tolerance. Code structure is never inspected.
+
+A problem is accepted only when its reference answer passes every case
+in **every** language it offers. CI enforces this on each PR, and
+`drill lint` checks the folder (at least 10 cases, all files present, no
+duplicate ids, a warning for similar titles).
+
+### Proposing a problem
+
+1. Fork this repo and create `problem/<id>-<slug>` in your fork.
+2. `drill new <slug> --title "..."`, fill `problem.md`, `tables.yaml` and
+   `cases/`, then `drill stubs <id>` and write the references.
+3. `drill test <id> --reference` must pass in every language.
+4. Open a PR and complete the checklist. In particular, explain how the
+   expected rows were derived: they must come from the problem's intent,
+   not from your reference solution's output. See AGENTS.md for details.
 
 ## Problems
 

@@ -53,6 +53,13 @@ user asks; propose a commit message first.
   Shell commands in docs may exceed it so they stay copy-pasteable.
 - Match the surrounding code; Python is checked with ruff.
 
+## Branches
+
+- Solutions live only on the solver's `drill/<username>` branch, pushed
+  to this repo. It is never merged into `main`; it only receives `main`.
+- Problem proposals come as PRs from forks (`problem/<id>-<slug>`).
+- `main` is protected: PR, one approval, passing checks.
+
 ## Authoring a problem
 
 1. `drill new <kebab-slug> --title "..."` (coding) or add `--type theory`.

@@ -213,4 +213,31 @@ def setup(skip_db: bool = False, skip_hooks: bool = False) -> int:
                   "(poetry install installs it)")
         else:
             print("    installed")
+
+    _drill_branch()
     return 0
+
+
+def _drill_branch() -> None:
+    """Put a fresh clone on the solver's own drill/<username> branch."""
+    from drill.cli import _branch, _git, suggested_branch
+
+    branch = _branch()
+    target = suggested_branch()
+    _step("Your drill branch")
+    if branch.startswith("drill/"):
+        print(f"    on {branch}")
+        return
+    if branch != "main":
+        print(f"    staying on {branch}; solve problems on {target}:\n"
+              f"    git switch -c {target}")
+        return
+    exists = bool(_git("rev-parse", "--verify", "--quiet", target))
+    args = ["switch", target] if exists else ["switch", "-c", target]
+    out = _run("git", *args)
+    if out.returncode == 0:
+        print(f"    switched to {target}: commit your solutions here and "
+              f"push it to share them (git push -u origin {target})")
+    else:
+        print(f"    couldn't switch: {out.stderr.strip()}\n"
+              f"    run: git {' '.join(args)}")
