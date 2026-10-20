@@ -13,7 +13,7 @@ from drill.config import PROBLEMS_DIR, SOLUTIONS_DIR
 # Problem ids are short random codes (e.g. "k7q2"): unique across forks
 # without coordination, and stable forever. No look-alike characters.
 ID_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz"
-ID_LENGTH = 4
+ID_LENGTH = 6
 ID_RE = re.compile(rf"^[{ID_ALPHABET}]{{{ID_LENGTH}}}$")
 FOLDER_RE = re.compile(
     rf"^([{ID_ALPHABET}]{{{ID_LENGTH}}})-[a-z0-9]+(?:-[a-z0-9]+)*$"
@@ -242,16 +242,24 @@ def all_problems() -> list[Problem]:
     return sorted((load(p) for p in _folders()), key=lambda p: p.title)
 
 
-def new_id(rng=None) -> str:
-    """A random id that no existing problem uses."""
+def new_id(rng=None, also_taken: set[str] | None = None) -> str:
+    """A random id that no local problem (nor `also_taken`) uses."""
     import secrets
 
     choice = rng.choice if rng else secrets.choice
-    taken = {f.name.split("-", 1)[0] for f in _folders()}
+    taken = {f.name.split("-", 1)[0] for f in _folders()} | (also_taken or set())
     while True:
         pid = "".join(choice(ID_ALPHABET) for _ in range(ID_LENGTH))
         if pid not in taken:
             return pid
+
+
+def by_id(pid: str) -> Problem | None:
+    """Exact id lookup, for paths (solutions/<id>/...): no slug guessing."""
+    for folder in _folders():
+        if folder.name.split("-", 1)[0] == pid:
+            return load(folder)
+    return None
 
 
 def find(ref: str) -> Problem:

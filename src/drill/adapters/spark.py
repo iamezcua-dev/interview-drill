@@ -140,10 +140,14 @@ class PySparkAdapter:
         name = f"drill_solution_{abs(hash(path))}"
         spec = importlib.util.spec_from_file_location(name, path)
         module = importlib.util.module_from_spec(spec)
+        # Don't leave __pycache__ folders in the solver's solutions/.
+        previous, sys.dont_write_bytecode = sys.dont_write_bytecode, True
         try:
             spec.loader.exec_module(module)
         except Exception as exc:
             raise SolutionError(_user_traceback(exc, path)) from exc
+        finally:
+            sys.dont_write_bytecode = previous
         fn = getattr(module, "solution", None)
         if not callable(fn):
             raise SolutionError("define a function named solution(...)")

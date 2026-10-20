@@ -30,7 +30,7 @@ File names: `solution.tsql.sql`, `solution.sparksql.sql`,
 `solution.pyspark.py`, `solution.scala`, `answer.md` + `quiz.yaml`
 (theory). Language keys: `tsql`, `pyspark`, `sparksql`, `scala`.
 
-Problem ids are short random codes (4 characters, e.g. `7xm8`) generated
+Problem ids are short random codes (6 characters, e.g. `7xm8xp`) generated
 by `drill new`: unique across forks without coordination, never reused,
 never renamed. Folders are `<id>-<kebab-slug>`; every command accepts the
 id or a unique start of the slug.
@@ -121,7 +121,7 @@ The user practices for interviews and asked for a strict mentor.
 
 **Commits during a session:** one commit per problem, only that
 problem's files, never files of problems still in the retry pool.
-Suggested format on drill branches: `7xm8(tsql): Attempt 2`. A message
+Suggested format on drill branches: `7xm8xp(tsql): Attempt 2`. A message
 containing `WIP` marks work in progress: the commit is saved but not
 graded (⚙️). Without it, the commit is graded: ✅ solved / ❌ not solved,
 locally and as the commit's icon on GitHub. A commit with solutions for

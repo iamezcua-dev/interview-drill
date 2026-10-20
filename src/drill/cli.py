@@ -226,9 +226,13 @@ def _targets_from_paths(paths: list[str], lang: str | None):
         parts = Path(raw).as_posix().split("/")
         if len(parts) < 2 or parts[0] not in ("solutions", "problems"):
             continue
+        # Paths match exact ids only: solutions/<id>/, problems/<id>-<slug>/
+        pid = parts[1] if parts[0] == "solutions" else parts[1].split("-")[0]
         try:
-            problem = P.find(parts[1])
+            problem = P.by_id(pid)
         except ProblemError:
+            continue
+        if problem is None:
             continue
         if parts[0] == "solutions":
             name = parts[-1]
@@ -458,8 +462,21 @@ def cmd_next(args) -> int:
     return 0
 
 
+def _ids_on_main() -> set[str] | None:
+    """Problem ids on GitHub's main (fetched now); None if unreachable."""
+    _git("fetch", "--quiet", "origin", "main")
+    if not _git("rev-parse", "--verify", "--quiet", "origin/main"):
+        return None
+    out = _git("ls-tree", "--name-only", "origin/main", "problems/")
+    return {Path(n).name.split("-", 1)[0] for n in out.splitlines() if n}
+
+
 def cmd_new(args) -> int:
-    pid = P.new_id()
+    remote = _ids_on_main()
+    if remote is None:
+        print("Note: couldn't read origin/main, so only local ids were "
+              "checked. CI still rejects a clashing id on your PR.")
+    pid = P.new_id(also_taken=remote)
     slug = args.slug.strip().lower()
     folder = config.PROBLEMS_DIR / f"{pid}-{slug}"
     if not P.FOLDER_RE.match(folder.name):

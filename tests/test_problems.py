@@ -10,10 +10,10 @@ def test_every_problem_loads_and_lints(capsys):
 
 
 @pytest.mark.parametrize("ref", [
-    "7xm8", "problems/7xm8-top-sales-per-department", "top-sales",
+    "7xm8xp", "problems/7xm8xp-top-sales-per-department", "top-sales",
 ])
 def test_find_accepts_short_ids(ref):
-    assert P.find(ref).id == "7xm8"
+    assert P.find(ref).id == "7xm8xp"
 
 
 def test_new_ids_are_valid_and_unused():

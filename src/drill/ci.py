@@ -39,7 +39,10 @@ def solution_files(sha: str) -> list[str]:
 
 
 def problem_ids(files: list[str]) -> list[str]:
-    return sorted({f.split("/")[1] for f in files if f.count("/") >= 2})
+    """Ids of real problems touched; other folders (e.g. notes) don't count,
+    exactly like the local hook."""
+    dirs = {f.split("/")[1] for f in files if f.count("/") >= 2}
+    return sorted(d for d in dirs if P.by_id(d) is not None)
 
 
 def _post_status(sha: str, state: str, description: str) -> None:
@@ -69,7 +72,7 @@ def _grade_commit(sha: str, files: list[str]) -> tuple[str, str]:
     from drill.cli import SOLUTION_FILES, THEORY_FILE
     from drill.quiz import QUIZ_FILE
 
-    problem = P.find(files[0].split("/")[1])
+    problem = P.by_id(files[0].split("/")[1])
     results = []
     with tempfile.TemporaryDirectory() as tmp:
         for rel in files:
@@ -125,10 +128,10 @@ def run(base: str, head: str) -> int:
     head_state = None
     try:
         for sha in commits:
-            files = solution_files(sha)
+            ids = problem_ids(solution_files(sha))
+            files = [f for f in solution_files(sha) if f.split("/")[1] in ids]
             if not files:
                 continue  # no solution in this commit: no flag
-            ids = problem_ids(files)
             message = _git("log", "-1", "--format=%B", sha)
             subject = message.splitlines()[0] if message else ""
             if len(ids) > 1:

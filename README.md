@@ -38,11 +38,11 @@ installs the git hooks, puts a fresh clone on your own branch
 ## The daily loop
 
 ```bash
-./drill start 7xm8 --lang tsql            # copies a stub to solutions/7xm8/
-# ...write your answer in solutions/7xm8/solution.tsql.sql...
-./drill test 7xm8                         # grade it, as often as you like
-git commit -am "7xm8(tsql): WIP"          # ⚙️ in progress: saved, not graded
-git commit -am "7xm8(tsql): Attempt 2"    # graded: ✅ solved or ❌ not solved
+./drill start 7xm8xp --lang tsql            # copies a stub to solutions/7xm8xp/
+# ...write your answer in solutions/7xm8xp/solution.tsql.sql...
+./drill test 7xm8xp                         # grade it, as often as you like
+git commit -am "7xm8xp(tsql): WIP"          # ⚙️ in progress: saved, not graded
+git commit -am "7xm8xp(tsql): Attempt 2"    # graded: ✅ solved or ❌ not solved
 ./drill status                            # your progress
 ```
 
@@ -79,7 +79,7 @@ re-grades every started solution (slow: it runs all their test cases).
   graded automatically; wrong questions are named but answers aren't
   revealed). Second, your written explanation in `answer.md`: compare it
   with the reference, then add a final line `SOLVED`.
-- `drill show 7xm8` (or `drill show top-sales`) prints a statement; `drill next --lang pyspark`
+- `drill show 7xm8xp` (or `drill show top-sales`) prints a statement; `drill next --lang pyspark`
   narrows suggestions.
 - Reference answers live in `problems/<id>/reference/`. Peeking is up to
   you.
@@ -152,16 +152,16 @@ duplicate ids, a warning for similar titles).
 
 | Id   | Type   | Languages             | Problem                                            |
 | ---- | ------ | --------------------- | -------------------------------------------------- |
-| 7xm8 | Coding | tsql, pyspark, sparksql, scala | Top seller(s) per department              |
-| b7x9 | Coding | tsql, pyspark, sparksql, scala | Running total of sales per department     |
-| xf9c | Coding | tsql, pyspark, sparksql, scala | Employees earning above their department average |
-| hsnc | Coding | tsql, pyspark, sparksql, scala | Customers with orders in every month of 2024 |
-| 6acg | Coding | tsql, pyspark, sparksql, scala | Month-over-month revenue change           |
-| b423 | Coding | tsql, pyspark, sparksql, scala | Total spent per user, highest first       |
-| erae | Coding | tsql, pyspark, sparksql, scala | Departments with an average salary above 70,000 |
-| t8mu | Coding | tsql, pyspark, sparksql, scala | Top 3 customers by total amount spent     |
-| sknm | Coding | tsql, pyspark, sparksql, scala | Most recently visited page per user       |
-| npq6 | Coding | tsql, pyspark, sparksql, scala | Employee count per department (including empty) |
+| 7xm8xp | Coding | tsql, pyspark, sparksql, scala | Top seller(s) per department              |
+| b7x9ye | Coding | tsql, pyspark, sparksql, scala | Running total of sales per department     |
+| xf9ca6 | Coding | tsql, pyspark, sparksql, scala | Employees earning above their department average |
+| hsnc9v | Coding | tsql, pyspark, sparksql, scala | Customers with orders in every month of 2024 |
+| 6acgxy | Coding | tsql, pyspark, sparksql, scala | Month-over-month revenue change           |
+| b423cs | Coding | tsql, pyspark, sparksql, scala | Total spent per user, highest first       |
+| eraekt | Coding | tsql, pyspark, sparksql, scala | Departments with an average salary above 70,000 |
+| t8mugv | Coding | tsql, pyspark, sparksql, scala | Top 3 customers by total amount spent     |
+| sknmj3 | Coding | tsql, pyspark, sparksql, scala | Most recently visited page per user       |
+| npq6aj | Coding | tsql, pyspark, sparksql, scala | Employee count per department (including empty) |
 
 ## Questions?
 
