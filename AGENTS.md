@@ -106,4 +106,6 @@ problem's files, never files of problems still in the retry pool.
 Suggested format on drill branches: `q001(tsql): Attempt 2`. A message
 containing `WIP` marks work in progress: the commit is saved but not
 graded (⚙️). Without it, the commit is graded: ✅ solved / ❌ not solved,
-locally and as the commit's icon on GitHub.
+locally and as the commit's icon on GitHub. A commit with solutions for
+two or more problems is refused (the only blocking rule); commits
+without solution files get no flag.

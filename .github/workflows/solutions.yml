@@ -1,14 +1,21 @@
-# Solver branches (drill/*). The commit's icon on GitHub means:
-#   green ✓  every solution changed by the push passes
-#   red ✗    at least one of them does not
-#   ⚙️ grey  the commit message contains WIP: not graded (job skipped)
-# Only solutions changed by the push are graded; run
-# `drill status --refresh` locally to re-grade everything.
+# Solver branches (drill/*): flag every commit that contains a solution.
+#
+#   ✅ green   the commit's solution passes
+#   ❌ red     it fails, or the commit touches more than one problem
+#   ⚙️ pending the message contains WIP: not graded. GitHub can't draw a
+#              gear, so it shows its "pending" dot; the status text says
+#              "⚙️ ... in progress (WIP)"
+#
+# Pushes that change nothing under solutions/ (e.g. merging main) don't
+# run this workflow, so they get no flag at all. Each commit is graded at
+# its own version of the files (`drill ci`); run `drill status --refresh`
+# locally to re-grade everything.
 name: solutions
 
 on:
   push:
     branches: ["drill/**"]
+    paths: ["solutions/**"]
 
 env:
   # Throwaway database that only exists inside this CI job.
@@ -17,12 +24,11 @@ env:
 
 jobs:
   grade:
-    name: >-
-      ${{ contains(github.event.head_commit.message, 'wip')
-          && '⚙️ In progress (WIP)' || 'Solved?' }}
-    # contains() is case-insensitive, so WIP, wip and Wip all count.
-    if: ${{ !contains(github.event.head_commit.message, 'wip') }}
+    name: drill
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write
     services:
       mssql:
         image: mcr.microsoft.com/mssql/server:2022-latest
@@ -40,36 +46,25 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Solutions changed by this push
-        id: changed
-        env:
-          BEFORE: ${{ github.event.before }}
-        run: |
-          if [[ "$BEFORE" =~ ^0+$ ]] || ! git cat-file -e "$BEFORE" 2>/dev/null
-          then
-            BASE="$(git merge-base origin/main HEAD)"
-          else
-            BASE="$BEFORE"
-          fi
-          git diff --name-only --diff-filter=AM "$BASE" HEAD -- solutions/ \
-            | grep -v '\.gitkeep$' > changed.txt || true
-          cat changed.txt
-          echo "count=$(wc -l < changed.txt)" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-python@v5
-        if: steps.changed.outputs.count != '0'
         with:
           python-version: "3.12"
       - uses: actions/setup-java@v4
-        if: steps.changed.outputs.count != '0'
         with:
           distribution: temurin
           java-version: "17"
       - uses: coursier/cache-action@v6
-        if: steps.changed.outputs.count != '0'
       - uses: VirtusLab/scala-cli-setup@v1
-        if: steps.changed.outputs.count != '0'
-      - if: steps.changed.outputs.count != '0'
-        run: pipx install poetry && poetry install
-      - name: Grade
-        if: steps.changed.outputs.count != '0'
-        run: xargs poetry run drill check --gate < changed.txt
+      - run: pipx install poetry && poetry install
+      - name: Flag each solution commit in this push
+        env:
+          BEFORE: ${{ github.event.before }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "$BEFORE" =~ ^0+$ ]] \
+            || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            BASE="$(git merge-base origin/main HEAD)"
+          else
+            BASE="$BEFORE"
+          fi
+          poetry run drill ci "$BASE" HEAD

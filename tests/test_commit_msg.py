@@ -39,3 +39,16 @@ def test_wip_commit_is_not_graded(tmp_path, monkeypatch, capsys):
     msg.write_text("q003: WIP first draft\n", encoding="utf-8")
     assert cli.main(["commit-msg", str(msg)]) == 0
     assert "in progress" in capsys.readouterr().out
+
+
+def test_two_problems_in_one_commit_are_refused(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(cli, "_branch", lambda: "drill/me")
+    staged = "solutions/q003/answer.md\nsolutions/q006/answer.md"
+    monkeypatch.setattr(
+        cli, "_git", lambda *a: staged if a[0] == "diff" else ""
+    )
+    monkeypatch.setattr(type(tmp_path), "is_file", lambda self: True)
+    msg = tmp_path / "MSG"
+    msg.write_text("q003 and q006\n", encoding="utf-8")
+    assert cli.main(["commit-msg", str(msg)]) == 1
+    assert "one problem per commit" in capsys.readouterr().out

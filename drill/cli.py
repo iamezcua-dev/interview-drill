@@ -535,8 +535,9 @@ def _message_ok(subject: str) -> bool:
 def cmd_commit_msg(args) -> int:
     """commit-msg hook: lint the message, then grade what this commit adds.
 
-    * drill/* branches: messages are free-form; changed solutions are
-      graded (✅/❌) unless the message contains WIP (⚙️). Never blocks.
+    * drill/* branches: messages are free-form; one problem per commit
+      (the only thing that blocks); the changed solution is graded (✅/❌)
+      unless the message contains WIP (⚙️). Failing never blocks.
     * other branches: conventional commit messages; changed problems have
       their reference answers graded, and a failing reference blocks.
     """
@@ -561,6 +562,13 @@ def cmd_commit_msg(args) -> int:
             solutions.append(target)
         elif not on_drill:
             references.append(target)
+    ids = sorted({problem.id for problem, _, _ in solutions})
+    if on_drill and len(ids) > 1:
+        print(f"Refused: one problem per commit, but this commit has "
+              f"{', '.join(ids)}.\nCommit them separately, e.g. "
+              f"`git restore --staged solutions/{ids[1]}`, then commit "
+              "again.")
+        return 1
     code = 0
     if solutions and is_wip(text):
         for problem, lang, _ in solutions:
@@ -572,6 +580,12 @@ def cmd_commit_msg(args) -> int:
     if references:
         code = max(code, _run(references, True, False, verbose=False))
     return code
+
+
+def cmd_ci(args) -> int:
+    from drill import ci
+
+    return ci.run(args.base, args.head)
 
 
 def cmd_setup(args) -> int:
@@ -702,6 +716,13 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("commit-msg", help="(hook) validate a commit message")
     p.add_argument("file")
     p.set_defaults(func=cmd_commit_msg)
+
+    p = sub.add_parser(
+        "ci", help="(CI) flag every solution commit in base..head"
+    )
+    p.add_argument("base")
+    p.add_argument("head", nargs="?", default="HEAD")
+    p.set_defaults(func=cmd_ci)
 
     p = sub.add_parser(
         "setup", help="start SQL Server, store its password, install hooks"

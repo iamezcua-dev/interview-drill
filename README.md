@@ -28,16 +28,28 @@ git commit -am "q001(tsql): Attempt 2"    # graded: ✅ solved or ❌ not solved
 poetry run drill status                   # your progress
 ```
 
-Commits are never blocked. Each one gets a verdict, printed by the git
-hook and shown as the commit's icon on GitHub:
+**One problem per commit.** A commit with solutions for two problems is
+refused; that is the only thing that ever blocks you. Failing answers
+never block.
 
-| Commit message | Local hook and `drill status` | GitHub |
-| -------------- | ----------------------------- | ------ |
-| contains `WIP` (any case) | ⚙️ in progress, not graded | grey ⚙️ In progress (WIP) |
-| changed solutions all pass | ✅ solved | green ✓ |
-| any changed solution fails | ❌ not solved | red ✗ |
+Every commit that contains a solution gets a flag, in three places: the
+git hook prints it when you commit, `drill status` shows it per problem,
+and GitHub shows it as the commit's icon after you push.
 
-Only the problems a commit changes are graded. `drill status --refresh`
+| Commit | Hook and `drill status` | GitHub icon |
+| ------ | ----------------------- | ----------- |
+| message contains `WIP` (any case) | ⚙️ in progress, not graded | pending dot, "⚙️ ... in progress (WIP)" |
+| the solution passes | ✅ solved | green ✓ |
+| the solution fails | ❌ not solved | red ✗ |
+| solutions for 2+ problems | refused | red ✗ "one problem per commit" |
+| no solution files (e.g. merging `main`) | nothing | no icon |
+
+GitHub can't draw a gear, so in-progress commits use its "pending" dot.
+Each pushed commit is graded at its own version of the files. Tip: push
+after each solution commit; if a push ends with a commit that has no
+solution, GitHub still puts the grading job's ✓ on that last commit.
+
+Only the problem a commit changes is graded. `drill status --refresh`
 re-grades every started solution (slow: it runs all their test cases).
 
 - **T-SQL / Spark SQL**: a plain `.sql` file, no procedure wrapper. Clear
