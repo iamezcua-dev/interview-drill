@@ -1,0 +1,23 @@
+# drill settings. `drill setup` copies this file to drill.yaml (gitignored)
+# the first time it runs; edit drill.yaml, not this file. Every key is
+# optional: anything you remove falls back to the value shown here.
+
+database:
+  host: localhost
+  port: 1433             # host port for the sql-drill container
+  user: sa
+  name: interview_drill
+  # password: only set automatically on machines without an OS keychain
+  # (headless Linux, WSL). Everywhere else it lives in the keychain below.
+
+# Where the SQL Server password is stored: macOS Keychain, Windows
+# Credential Manager or Linux Secret Service, under this service/account.
+keychain:
+  service: de-drill
+  account: sa
+
+# JDK for Spark (pyspark, sparksql). Leave empty to auto-detect Java 17.
+java_home:
+
+# Default language for `drill start`: tsql, pyspark, sparksql or scala.
+default_lang:

@@ -1,0 +1,7 @@
+name: "Quantity multiplies price"
+input:
+  transactions:
+    - [1, 101, 10, 3.0]
+expected:
+  rows:
+    - [1, 30.0]

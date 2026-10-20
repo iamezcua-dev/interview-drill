@@ -1,0 +1,5 @@
+page_visits:
+  columns:
+    - user_id: int
+    - page: string(50)
+    - visit_date: date

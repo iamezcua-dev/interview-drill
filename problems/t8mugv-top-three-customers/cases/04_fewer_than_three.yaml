@@ -1,0 +1,9 @@
+name: "Fewer than three customers"
+input:
+  orders:
+    - [1, 1, 2024-01-01, 500]
+    - [2, 2, 2024-01-01, 300]
+expected:
+  rows:
+    - [1, 500.00]
+    - [2, 300.00]

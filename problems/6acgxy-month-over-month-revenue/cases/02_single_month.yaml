@@ -1,0 +1,7 @@
+name: "Single month: previous and change are NULL"
+input:
+  monthly_revenue:
+    - [1, 5000]
+expected:
+  rows:
+    - [1, 5000, null, null]

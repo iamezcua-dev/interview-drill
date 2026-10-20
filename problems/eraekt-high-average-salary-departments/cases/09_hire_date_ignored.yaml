@@ -1,0 +1,8 @@
+name: "hire_date does not matter"
+input:
+  employees:
+    - [1, "A", 80000.0, 1990-01-01]
+    - [2, "A", 90000.0, 2099-12-31]
+expected:
+  rows:
+    - ["A", 85000.0]

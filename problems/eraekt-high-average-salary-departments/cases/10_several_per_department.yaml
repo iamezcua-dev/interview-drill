@@ -1,0 +1,10 @@
+name: "Several employees per department"
+input:
+  employees:
+    - [1, "A", 100000.0, 2020-01-01]
+    - [2, "A", 80000.0, 2020-01-01]
+    - [3, "A", 60000.0, 2020-01-01]
+    - [4, "B", 50000.0, 2020-01-01]
+expected:
+  rows:
+    - ["A", 80000.0]

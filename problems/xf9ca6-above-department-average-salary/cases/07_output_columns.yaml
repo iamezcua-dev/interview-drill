@@ -1,0 +1,8 @@
+name: "Only the required columns are returned"
+input:
+  employees:
+    - [1, "Alice", "APAC", 80000]
+    - [2, "Bob", "APAC", 60000]
+expected:
+  rows:
+    - [1, "Alice", "APAC", 80000]

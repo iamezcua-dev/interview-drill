@@ -1,0 +1,10 @@
+name: "Single department with employees"
+input:
+  dept:
+    - [1, "Solo"]
+  emp:
+    - [1, 1]
+    - [2, 1]
+expected:
+  rows:
+    - ["Solo", 2]

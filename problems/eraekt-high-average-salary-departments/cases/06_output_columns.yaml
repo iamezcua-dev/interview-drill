@@ -1,0 +1,7 @@
+name: "Exactly department and avg_salary"
+input:
+  employees:
+    - [1, "Engineering", 80000.0, 2020-01-01]
+expected:
+  rows:
+    - ["Engineering", 80000.0]

@@ -1,0 +1,13 @@
+name: "Employees without a department are not counted anywhere"
+input:
+  dept:
+    - [1, "Ops"]
+    - [2, "Idle"]
+  emp:
+    - [1, 1]
+    - [2, null]
+    - [3, null]
+expected:
+  rows:
+    - ["Ops", 1]
+    - ["Idle", 0]

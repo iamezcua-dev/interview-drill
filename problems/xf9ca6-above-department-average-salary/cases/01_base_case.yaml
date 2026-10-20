@@ -1,0 +1,14 @@
+name: "Base case: two departments"
+input:
+  employees:
+    - [1, "Alice", "APAC", 80000]
+    - [2, "Bob", "APAC", 60000]
+    - [3, "Carol", "APAC", 90000]
+    - [4, "Dave", "EMEA", 70000]
+    - [5, "Eve", "EMEA", 75000]
+    - [6, "Frank", "EMEA", 65000]
+expected:
+  rows:
+    - [1, "Alice", "APAC", 80000]
+    - [3, "Carol", "APAC", 90000]
+    - [5, "Eve", "EMEA", 75000]

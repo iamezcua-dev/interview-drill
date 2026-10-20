@@ -1,0 +1,7 @@
+name: "An only employee is never above their own average"
+input:
+  employees:
+    - [1, "Alice", "APAC", 90000]
+    - [2, "Bob", "EMEA", 80000]
+expected:
+  rows: []

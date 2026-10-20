@@ -1,0 +1,10 @@
+name: "Helper columns (like the average) must not leak"
+input:
+  employees:
+    - [1, "Alice", "APAC", 80000]
+    - [2, "Bob", "APAC", 60000]
+    - [3, "Carol", "APAC", 90000]
+expected:
+  rows:
+    - [1, "Alice", "APAC", 80000]
+    - [3, "Carol", "APAC", 90000]

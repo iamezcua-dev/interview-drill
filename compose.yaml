@@ -1,0 +1,26 @@
+# Local SQL Server for T-SQL drills. Start it with `drill setup`, which
+# supplies the password from your OS keychain (or .env) at run time.
+# Plain `docker compose up -d` works too if DRILL_DB_PASSWORD is set.
+name: de-interview-drill
+
+services:
+  sql-drill:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sql-drill
+    # The image is x86-64 only; Apple silicon runs it through Rosetta.
+    platform: linux/amd64
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${DRILL_DB_PASSWORD:?set DRILL_DB_PASSWORD or run drill setup}
+    ports:
+      # SQL Server always listens on 1433 inside the container.
+      - "${DRILL_DB_PORT:-1433}:1433"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -Q "SELECT 1" -b -o /dev/null
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    restart: unless-stopped

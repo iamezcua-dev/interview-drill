@@ -1,0 +1,12 @@
+name: "Base case"
+input:
+  employees:
+    - [1, "Engineering", 95000.0, 2020-01-15]
+    - [2, "Engineering", 85000.0, 2019-06-01]
+    - [3, "Marketing", 60000.0, 2021-03-10]
+    - [4, "Marketing", 65000.0, 2022-07-20]
+    - [5, "Sales", 72000.0, 2020-11-05]
+    - [6, "Sales", 68000.0, 2021-09-14]
+expected:
+  rows:
+    - ["Engineering", 90000.0]

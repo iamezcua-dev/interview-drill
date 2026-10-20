@@ -1,0 +1,6 @@
+-- 6acgxy: Month-over-month revenue change
+--
+-- Tables:
+--   monthly_revenue(month INT, revenue INT)
+-- Output: month, revenue, prev_revenue, change
+-- Full statement: drill show 6acgxy

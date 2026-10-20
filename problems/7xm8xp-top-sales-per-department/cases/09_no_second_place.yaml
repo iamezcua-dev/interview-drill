@@ -1,0 +1,9 @@
+name: "Second and third place are not returned"
+input:
+  employee_sales:
+    - [1, "APAC", 2024-01-01, 1000]
+    - [2, "APAC", 2024-01-02, 999]
+    - [3, "APAC", 2024-01-03, 998]
+expected:
+  rows:
+    - ["APAC", 1, 1000.00]

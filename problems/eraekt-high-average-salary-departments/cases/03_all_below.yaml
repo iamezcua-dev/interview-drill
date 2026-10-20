@@ -1,0 +1,7 @@
+name: "Every department below the threshold"
+input:
+  employees:
+    - [1, "A", 50000.0, 2020-01-01]
+    - [2, "B", 60000.0, 2020-01-01]
+expected:
+  rows: []

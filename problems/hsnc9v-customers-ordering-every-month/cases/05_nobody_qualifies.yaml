@@ -1,0 +1,8 @@
+name: "No customer has all 12 months"
+input:
+  orders:
+    - [1, 1, 2024-01-01, 100]
+    - [2, 2, 2024-06-01, 100]
+    - [3, 3, 2024-12-01, 100]
+expected:
+  rows: []

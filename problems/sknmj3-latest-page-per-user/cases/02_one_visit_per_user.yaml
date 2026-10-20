@@ -1,0 +1,9 @@
+name: "One visit per user"
+input:
+  page_visits:
+    - [1, "home", 2024-01-01]
+    - [2, "pricing", 2024-01-02]
+expected:
+  rows:
+    - [1, "home", 2024-01-01]
+    - [2, "pricing", 2024-01-02]

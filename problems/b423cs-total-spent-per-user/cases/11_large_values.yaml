@@ -1,0 +1,9 @@
+name: "Large values"
+input:
+  transactions:
+    - [1, 101, 1000, 999.99]
+    - [2, 102, 500, 1000.0]
+expected:
+  rows:
+    - [1, 999990.0]
+    - [2, 500000.0]

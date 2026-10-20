@@ -1,0 +1,7 @@
+-- b7x9ye: Running total of sales per department
+--
+-- Tables:
+--   employee_sales(employee_id INT, department VARCHAR(5), sale_date
+--     DATE, amount DECIMAL(10,2))
+-- Output: department, employee_id, sale_date, amount, running_total
+-- Full statement: drill show b7x9ye

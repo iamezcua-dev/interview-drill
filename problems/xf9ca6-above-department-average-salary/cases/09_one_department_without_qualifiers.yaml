@@ -1,0 +1,10 @@
+name: "A department where nobody is above average"
+input:
+  employees:
+    - [1, "Alice", "APAC", 50000]
+    - [2, "Bob", "APAC", 50000]
+    - [3, "Carol", "EMEA", 40000]
+    - [4, "Dave", "EMEA", 80000]
+expected:
+  rows:
+    - [4, "Dave", "EMEA", 80000]

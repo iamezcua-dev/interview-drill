@@ -1,0 +1,14 @@
+// npq6aj: Employee count per department (including empty)
+//
+// Tables:
+//   dept(department_id INT, department_name STRING)
+//   emp(employee_id INT, department_id INT NULL)
+// Output: department_name, employee_count
+// Full statement: drill show npq6aj
+
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.functions._
+
+object Solution {
+  def solution(dept: DataFrame, emp: DataFrame): DataFrame = ???
+}

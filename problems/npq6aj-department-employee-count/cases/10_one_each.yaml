@@ -1,0 +1,15 @@
+name: "Exactly one employee per department"
+input:
+  dept:
+    - [1, "P"]
+    - [2, "Q"]
+    - [3, "R"]
+  emp:
+    - [1, 1]
+    - [2, 2]
+    - [3, 3]
+expected:
+  rows:
+    - ["P", 1]
+    - ["Q", 1]
+    - ["R", 1]

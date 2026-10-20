@@ -1,0 +1,7 @@
+name: "Single customer"
+input:
+  orders:
+    - [1, 1, 2024-01-01, 250]
+expected:
+  rows:
+    - [1, 250.00]

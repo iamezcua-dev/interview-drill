@@ -1,0 +1,9 @@
+name: "Large amounts do not overflow"
+input:
+  employee_sales:
+    - [1, "APAC", 2024-01-01, 9999999.99]
+    - [1, "APAC", 2024-01-02, 1]
+expected:
+  rows:
+    - ["APAC", 1, 2024-01-01, 9999999.99, 9999999.99]
+    - ["APAC", 1, 2024-01-02, 1.00, 10000000.99]

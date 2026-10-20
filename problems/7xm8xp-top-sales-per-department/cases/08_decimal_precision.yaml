@@ -1,0 +1,10 @@
+name: "Decimal precision"
+input:
+  employee_sales:
+    - [1, "APAC", 2024-01-01, 333.33]
+    - [1, "APAC", 2024-01-02, 333.33]
+    - [1, "APAC", 2024-01-03, 333.34]
+    - [2, "APAC", 2024-01-04, 999.99]
+expected:
+  rows:
+    - ["APAC", 1, 1000.00]

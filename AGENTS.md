@@ -1,0 +1,129 @@
+# AGENTS.md
+
+Instructions for any AI coding assistant working in this repository
+(Claude Code, Codex, Cursor, Copilot, Gemini, ...). Humans: see
+README.md.
+
+## What this repo is
+
+A drill bank for data engineering interviews. Each problem is solvable in
+up to four languages (T-SQL, PySpark, Spark SQL, Scala) or is a theory
+question. The `drill` CLI (Python, `drill/`) grades solutions against
+language-neutral test cases.
+
+## Layout and ownership
+
+```
+problems/<id>-<slug>/      owned by main: never edit on a drill branch
+  problem.md               frontmatter (id, title, type, languages,
+                           output, tolerance, sorted_by) + statement
+  tables.yaml              input tables with neutral column types
+  cases/NN_<name>.yaml     input rows + expected rows / asserts
+  stubs/                   starting files copied by `drill start`
+  reference/               reference answers (spoilers by design)
+solutions/<id>/            owned by the solver; empty on main
+src/drill/                 grader CLI and language adapters
+drill.example.yaml         documented settings; drill.yaml is local only
+```
+
+File names: `solution.tsql.sql`, `solution.sparksql.sql`,
+`solution.pyspark.py`, `solution.scala`, `answer.md` + `quiz.yaml`
+(theory). Language keys: `tsql`, `pyspark`, `sparksql`, `scala`.
+
+Problem ids are short random codes (6 characters, e.g. `7xm8xp`) generated
+by `drill new`: unique across forks without coordination, never reused,
+never renamed. Folders are `<id>-<kebab-slug>`; every command accepts the
+id or a unique start of the slug.
+
+## Commands
+
+```
+./drill setup                 # once: Java, SQL Server, password, hooks
+./drill next [--lang L]       # pick an unstarted problem
+./drill start <id> --lang L   # copy the stub into solutions/
+./drill test <id> [--lang L]  # grade it
+./drill status                # progress
+./drill check --all --reference   # all reference answers
+./drill lint                  # validate problem folders
+uv run pytest                 # tests for drill itself
+```
+
+`./drill` (Windows: `drill.cmd`) runs the CLI through uv, which manages
+Python and dependencies; never ask users to install Python or Poetry.
+
+Never run git commands that commit, push or rewrite history unless the
+user asks; propose a commit message first.
+
+## Code style
+
+- Max line length 80 for source code, SQL, YAML and Markdown prose.
+  Shell commands in docs may exceed it so they stay copy-pasteable.
+- Match the surrounding code; Python is checked with ruff.
+
+## Branches
+
+- Solutions live only on the solver's `drill/<username>` branch, pushed
+  to this repo. It is never merged into `main`; it only receives `main`.
+- Problem proposals come as PRs from forks (`problem/<id>-<slug>`).
+- `main` is protected: PR, one approval, passing checks.
+
+## Authoring a problem
+
+1. `drill new <kebab-slug> --title "..."` (coding) or add `--type theory`.
+2. Fill `problem.md`, `tables.yaml` and at least 10 `cases/*.yaml`
+   covering edge cases (ties, empty input, NULLs, precision, ordering).
+3. `drill stubs <id>`, then write a reference in every declared language.
+   Theory: `reference/answer.md` (ends with `SOLVED`) and
+   `reference/quiz.yaml` with at least 5 multiple-choice questions
+   answerable from the reference; `drill stubs` derives the answer-free
+   `stubs/quiz.yaml`.
+4. `drill test <id> --reference` must be green for every language.
+5. Expected rows must come from the problem author's intent, not be
+   derived from the reference you are testing; derive them by hand or
+   from an independent source, and say so in the PR.
+6. Never change the output contract of a published problem; add a new id.
+
+## Running a drill session (when the user asks to be drilled)
+
+The user practices for interviews and asked for a strict mentor.
+
+**Presenting a problem (every time, in this order):**
+1. Show the session stats: score, retry pool, current streak, problem
+   id and type (SQL coding / PySpark coding / Theory).
+2. Run `drill start <id> --lang <lang>` (coding) or create the answer
+   file (theory).
+3. Show the stats again, then the table schema, the problem statement and
+   any datatype or output notes (`drill show <id>`).
+4. Wait for the user's "go" before starting the timer. When they say
+   they are done, report the elapsed time and run `drill test` right away,
+   without asking them to run it.
+
+**Grading:**
+- Be strict: an incomplete answer is a fail; every part of a multi-part
+  question must be right.
+- Theory: a definition without the *why* / *when it matters* fails.
+- On a fail: record it, reset the streak, add the problem to the retry
+  pool and teach the concept. Don't give away a coding answer unless
+  asked.
+- Theory answers live in `solutions/<id>/answer.md`. Append one block per
+  attempt so progress stays visible; keep the elaborated answer last:
+
+  ```
+  ATTEMPT <N> - PASS|FAIL
+  USER ANSWER: <verbatim>
+  VERDICT: <what was right / missing>
+
+  ELABORATED CORRECT ANSWER: <full answer>
+  ```
+
+  The file's final line is `SOLVED` once the user passes.
+- Retry failed problems after a streak of correct answers.
+
+**Commits during a session:** one commit per problem, only that
+problem's files, never files of problems still in the retry pool.
+Suggested format on drill branches: `7xm8xp(tsql): Attempt 2`. A message
+containing `WIP` marks work in progress: the commit is saved but not
+graded (⚙️). Without it, the commit is graded: ✅ solved / ❌ not solved,
+locally and as the commit's icon on GitHub. A commit with solutions for
+two or more problems is refused (the only blocking rule); commits
+without solution files get no flag.

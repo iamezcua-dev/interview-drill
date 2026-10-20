@@ -1,0 +1,11 @@
+name: "Three qualifying departments, ordered"
+input:
+  employees:
+    - [1, "X", 72000.0, 2020-01-01]
+    - [2, "Y", 85000.0, 2020-01-01]
+    - [3, "Z", 91000.0, 2020-01-01]
+expected:
+  rows:
+    - ["Z", 91000.0]
+    - ["Y", 85000.0]
+    - ["X", 72000.0]

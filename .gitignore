@@ -203,3 +203,16 @@ spark-warehouse/
 
 
 # End of https://www.gitignore.io/api/sbt,scala,spark,intellij
+
+# --- drill ---
+# Local settings and caches (see drill.example.yaml)
+drill.yaml
+.drill/
+.scala-build/
+.bsp/
+
+# uv virtualenv
+.venv/
+
+# Theory questions held back from main until reviewed (local only)
+.proposed-theory-questions/

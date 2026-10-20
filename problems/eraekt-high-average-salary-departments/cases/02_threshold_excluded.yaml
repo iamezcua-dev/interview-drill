@@ -1,0 +1,8 @@
+name: "An average of exactly 70000 is excluded"
+input:
+  employees:
+    - [1, "A", 70000.0, 2020-01-01]
+    - [2, "B", 80000.0, 2020-01-01]
+expected:
+  rows:
+    - ["B", 80000.0]

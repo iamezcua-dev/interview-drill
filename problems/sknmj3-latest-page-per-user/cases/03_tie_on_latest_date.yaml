@@ -1,0 +1,10 @@
+name: "Tie on the latest date: both pages"
+input:
+  page_visits:
+    - [1, "A", 2024-03-01]
+    - [1, "B", 2024-03-01]
+    - [1, "C", 2024-01-01]
+expected:
+  rows:
+    - [1, "A", 2024-03-01]
+    - [1, "B", 2024-03-01]

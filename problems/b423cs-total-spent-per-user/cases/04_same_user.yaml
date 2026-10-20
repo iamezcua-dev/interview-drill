@@ -1,0 +1,9 @@
+name: "All rows from one user"
+input:
+  transactions:
+    - [1, 101, 2, 10.0]
+    - [1, 102, 3, 5.0]
+    - [1, 103, 1, 20.0]
+expected:
+  rows:
+    - [1, 55.0]

@@ -1,0 +1,7 @@
+name: "Single row: running total equals amount"
+input:
+  employee_sales:
+    - [1, "APAC", 2024-03-01, 750]
+expected:
+  rows:
+    - ["APAC", 1, 2024-03-01, 750.00, 750.00]

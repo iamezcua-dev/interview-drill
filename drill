@@ -1,0 +1,57 @@
+#!/bin/sh
+# drill launcher (macOS / Linux / Git Bash). The only prerequisite is git:
+# this script runs the drill CLI through uv, which downloads the right
+# Python and drill's dependencies on first use. Windows: use drill.cmd.
+set -e
+
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+export DRILL_ROOT="$ROOT"
+INSTALL_CMD="curl -LsSf https://astral.sh/uv/install.sh | sh"
+
+find_uv() {
+    # .exe variants: Git Bash on Windows.
+    for candidate in "$(command -v uv 2>/dev/null || true)" \
+        "$HOME/.local/bin/uv" "$HOME/.local/bin/uv.exe" \
+        "$HOME/.cargo/bin/uv" "$HOME/.cargo/bin/uv.exe"; do
+        if [ -n "$candidate" ] && [ -x "$candidate" ]; then
+            echo "$candidate"
+            return 0
+        fi
+    done
+    return 1
+}
+
+UV="$(find_uv || true)"
+if [ -z "$UV" ]; then
+    echo "drill needs uv, a small tool that installs the right Python and" >&2
+    echo "drill's dependencies for you: https://docs.astral.sh/uv/" >&2
+    if [ ! -t 0 ]; then
+        echo "Install it with: $INSTALL_CMD" >&2
+        exit 1
+    fi
+    printf 'Install uv now with its official installer? [y/N] ' >&2
+    read -r reply
+    case "$reply" in
+        y | Y | yes | YES) ;;
+        *)
+            echo "Install it yourself with: $INSTALL_CMD" >&2
+            exit 1
+            ;;
+    esac
+    # Install to ~/.local/bin without editing your shell profile.
+    if command -v curl >/dev/null 2>&1; then
+        curl -LsSf https://astral.sh/uv/install.sh | UV_NO_MODIFY_PATH=1 sh
+    elif command -v wget >/dev/null 2>&1; then
+        wget -qO- https://astral.sh/uv/install.sh | UV_NO_MODIFY_PATH=1 sh
+    else
+        echo "Neither curl nor wget is available to download uv." >&2
+        exit 1
+    fi
+    UV="$(find_uv || true)"
+    if [ -z "$UV" ]; then
+        echo "uv was installed but can't be found; open a new terminal." >&2
+        exit 1
+    fi
+fi
+
+exec "$UV" run --quiet --project "$ROOT" drill "$@"

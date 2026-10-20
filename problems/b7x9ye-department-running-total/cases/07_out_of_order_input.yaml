@@ -1,0 +1,11 @@
+name: "Order follows sale_date, not insert order"
+input:
+  employee_sales:
+    - [1, "APAC", 2024-06-15, 400]
+    - [1, "APAC", 2024-01-10, 100]
+    - [1, "APAC", 2024-03-22, 250]
+expected:
+  rows:
+    - ["APAC", 1, 2024-01-10, 100.00, 100.00]
+    - ["APAC", 1, 2024-03-22, 250.00, 350.00]
+    - ["APAC", 1, 2024-06-15, 400.00, 750.00]

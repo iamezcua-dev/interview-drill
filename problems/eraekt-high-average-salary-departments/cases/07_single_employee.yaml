@@ -1,0 +1,7 @@
+name: "Single-employee department"
+input:
+  employees:
+    - [1, "Solo", 75000.0, 2020-01-01]
+expected:
+  rows:
+    - ["Solo", 75000.0]

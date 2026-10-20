@@ -1,0 +1,6 @@
+employee_sales:
+  columns:
+    - employee_id: int
+    - department: string(5)
+    - sale_date: date
+    - amount: decimal(10,2)

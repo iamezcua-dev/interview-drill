@@ -1,0 +1,55 @@
+# Installed by `drill setup`. The drill hooks run the same commands as CI
+# (.github/workflows/drill.yml), so local results match GitHub.
+#
+# Solvers are never blocked: the drill hook reports failing solutions and
+# still lets the commit through, and the auto-fixers below skip
+# solutions/ so they can't rewrite (and therefore reject) a solver's
+# commit. GitHub then shows the verdict: see .github/workflows/.
+default_install_hook_types: [pre-commit, commit-msg]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^solutions/
+      - id: end-of-file-fixer
+        exclude: ^solutions/
+      - id: mixed-line-ending
+        exclude: ^solutions/
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.24.6
+    hooks:
+      - id: typos
+        exclude: ^(solutions|problems/.*/cases)/
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.7
+    hooks:
+      - id: ruff-check
+        files: ^(drill|tests)/
+
+  - repo: local
+    hooks:
+      - id: drill-lint
+        name: drill lint (problem folders are well formed)
+        entry: ./drill lint
+        language: system
+        pass_filenames: false
+        files: ^problems/
+
+      - id: drill-commit
+        # Runs at commit-msg time so it can see "WIP" in the message.
+        # drill/* branches: grades the solutions in this commit and prints
+        # ✅ solved / ❌ not solved / ⚙️ in progress (WIP). Never blocks.
+        # Other branches: conventional messages + reference answers.
+        name: drill (grade this commit)
+        entry: ./drill commit-msg
+        language: system
+        stages: [commit-msg]
+        always_run: true
+        verbose: true

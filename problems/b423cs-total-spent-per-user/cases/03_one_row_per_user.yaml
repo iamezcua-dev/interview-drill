@@ -1,0 +1,9 @@
+name: "One row per user"
+input:
+  transactions:
+    - [1, 101, 1, 100.0]
+    - [2, 102, 1, 50.0]
+expected:
+  rows:
+    - [1, 100.0]
+    - [2, 50.0]

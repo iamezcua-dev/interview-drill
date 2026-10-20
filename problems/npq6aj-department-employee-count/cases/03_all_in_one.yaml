@@ -1,0 +1,13 @@
+name: "Everyone in one department"
+input:
+  dept:
+    - [1, "Only"]
+    - [2, "Empty"]
+  emp:
+    - [1, 1]
+    - [2, 1]
+    - [3, 1]
+expected:
+  rows:
+    - ["Only", 3]
+    - ["Empty", 0]
