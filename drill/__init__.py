@@ -10,3 +10,6 @@ SOLUTION_FILES = {
 }
 
 THEORY_FILE = "answer.md"
+
+# Who grants push access for drill/<username> branches.
+MAINTAINER_EMAIL = "iamezcua.dev@gmail.com"

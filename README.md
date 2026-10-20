@@ -21,7 +21,8 @@ branch **`drill/<your-github-login>`**, and finally runs `drill doctor`.
 > it here to share your approaches (`git push -u origin drill/<username>`),
 > and merge `main` into it whenever you want new problems. It is never
 > merged into `main`. The git hook refuses solution commits on any other
-> branch and tells you how to switch.
+> branch and tells you how to switch. No permission to push? Ask for
+> access at iamezcua.dev@gmail.com.
 
 ## The daily loop
 

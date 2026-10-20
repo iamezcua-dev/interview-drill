@@ -16,7 +16,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-from drill import LANGUAGES, SOLUTION_FILES, THEORY_FILE, adapters, config
+from drill import (
+    LANGUAGES, MAINTAINER_EMAIL, SOLUTION_FILES, THEORY_FILE, adapters,
+    config,
+)
 from drill import problems as P
 from drill import runner, scaffold
 from drill.problems import Problem, ProblemError
@@ -632,7 +635,9 @@ def cmd_commit_msg(args) -> int:
     elif solutions:
         code = _run(solutions, False, False, verbose=False)
     if solutions:
-        print(f"\nShare your approach: git push -u origin {branch}")
+        print(f"\nShare your approach: git push -u origin {branch}\n"
+              "No permission to push? Ask the maintainer for access: "
+              f"{MAINTAINER_EMAIL}")
     if references:
         code = max(code, _run(references, True, False, verbose=False))
     return code

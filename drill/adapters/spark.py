@@ -1,5 +1,6 @@
 """PySpark (DataFrame API) and Spark SQL adapters sharing one session."""
 
+import datetime as dt
 import importlib.util
 import inspect
 import os
@@ -42,6 +43,9 @@ def session():
         .config("spark.driver.host", "127.0.0.1")
         .config("spark.driver.bindAddress", "127.0.0.1")
         .config("spark.ui.showConsoleProgress", "false")
+        # If a solver's Python code (e.g. a UDF) crashes a worker, show the
+        # Python error instead of a bare EOFException.
+        .config("spark.python.worker.faulthandler.enabled", "true")
         .config("spark.driver.extraJavaOptions",
                 f"-Dlog4j2.configurationFile={LOG4J.as_uri()}")
         .getOrCreate()
@@ -57,46 +61,59 @@ def stop() -> None:
         _session = None
 
 
-def _data_type(neutral: str):
-    from pyspark.sql import types as T
+def _literal(neutral: str, value) -> str:
+    """A typed Spark SQL literal for one cell."""
+    spark_type = types.spark(neutral)
+    value = types.coerce(neutral, value)
+    if value is None:
+        return f"CAST(NULL AS {spark_type})"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, dt.datetime):
+        return f"TIMESTAMP'{value.isoformat(sep=' ')}'"
+    if isinstance(value, dt.date):
+        return f"DATE'{value.isoformat()}'"
+    if isinstance(value, str):
+        escaped = value.replace("\\", "\\\\").replace("'", "\\'")
+        return f"'{escaped}'"
+    return f"CAST('{value}' AS {spark_type})"
 
-    base = neutral.split("(", 1)[0]
-    if base == "decimal":
-        precision, scale = neutral[len("decimal("):-1].split(",")
-        return T.DecimalType(int(precision), int(scale))
-    return {
-        "int": T.IntegerType(),
-        "bigint": T.LongType(),
-        "double": T.DoubleType(),
-        "date": T.DateType(),
-        "timestamp": T.TimestampType(),
-        "boolean": T.BooleanType(),
-        "string": T.StringType(),
-    }[base]
 
+def _table_sql(table: Table, rows: list) -> str:
+    """SELECT over an inline VALUES list, typed exactly as tables.yaml.
 
-def schema(table: Table):
-    from pyspark.sql.types import StructField, StructType
-
-    return StructType([
-        StructField(c.name, _data_type(c.type), c.nullable)
-        for c in table.columns
-    ])
+    Building inputs in SQL keeps them inside the JVM: unlike
+    `createDataFrame(<python list>)` it needs no Python worker processes,
+    which are slower to start and crash on some Windows setups.
+    """
+    names = [f"c{i}" for i in range(len(table.columns))]
+    cast = ", ".join(
+        f"CAST({n} AS {types.spark(c.type)}) AS `{c.name}`"
+        for n, c in zip(names, table.columns)
+    )
+    if not rows:
+        nulls = ", ".join(
+            f"CAST(NULL AS {types.spark(c.type)})" for c in table.columns
+        )
+        return (f"SELECT {cast} FROM VALUES ({nulls}) AS t({', '.join(names)})"
+                " WHERE false")
+    values = ", ".join(
+        "(" + ", ".join(
+            _literal(c.type, v) for c, v in zip(table.columns, row)
+        ) + ")"
+        for row in rows
+    )
+    return f"SELECT {cast} FROM VALUES {values} AS t({', '.join(names)})"
 
 
 def frames(problem: Problem, case: Case) -> dict:
     spark = session()
-    dfs = {}
-    for table in problem.tables:
-        rows = [
-            tuple(
-                types.coerce(col.type, value)
-                for col, value in zip(table.columns, row)
-            )
-            for row in case.input.get(table.name, [])
-        ]
-        dfs[table.name] = spark.createDataFrame(rows, schema(table))
-    return dfs
+    return {
+        table.name: spark.sql(
+            _table_sql(table, case.input.get(table.name, []))
+        )
+        for table in problem.tables
+    }
 
 
 def collect(df) -> Result:
